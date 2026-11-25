@@ -74,8 +74,8 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
 3. **Look up the symptom** in the index below and in Troubleshooting.md's index.
 4. **Compile only through the tools:** `variant.py FILE FUNC -f snippet.c` (`--repo` when headers
    change). Check Tools.md before writing any script; extend a tool rather than add a one-off.
-   `scratch.py` syncs the user's WIP as is; for a replacement definition plus config edits, run
-   `--fn` first, then `--no-sync -e … --make`.
+   `scratch.py` syncs the user's WIP as is; a replacement definition plus config edits go in one
+   call (`--fn F.c --func F -e e.py --src … --make`: the definition first, then the edits).
 5. **Near-match:** `vsweep.py SRC FUNC pack` on *every* new best version (levers interact), then
    `variant.py --proto` for prototype tests, `rtl.py --diff A.c B.c` for "why does B fix it",
    `rtl.py --priority` for register choices.
