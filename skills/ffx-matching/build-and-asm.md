@@ -15,7 +15,8 @@
   moves up. Fix: a `D_<addr> = 0x<addr>;` entry in symbol_addrs.txt (the file is in address order:
   insert at its address), so splat writes `nonmatchings/<unit>/D_<addr>.s`, plus
   `INCLUDE_RODATA` for it right after the function. func_001AD0E8 / `"btl_chr"` (0x56DCA8): full
-  build sha1 OK in a scratch repo, 2026-11-24 session.
+  build sha1 OK in a scratch repo, 2026-11-24 session. This is a stopgap: the string usually comes from
+  dead code in a nearby function (next section), which replaces the `INCLUDE_RODATA` once matched.
 
 ## Building .bss and .rodata from C
 
@@ -23,6 +24,12 @@
   definition order; the TU's `.bss` must fill exactly to the next splat bss subsegment.
 - gcc 2.95 emits an initializer's string literals in reverse order; an unused `static inline` still
   emits its string constants.
+- **Dead code keeps its string literals:** gcc 2.95 writes a literal to `.rodata` when the statement is
+  expanded to RTL; the code is deleted later. `if (0) { … "s" … }`, `int on = 0; if (on) …`, a call after
+  `return;` and an unused `const char* p = "s";` all emit `"s"` with no instructions or reference
+  (`#if 0` and `sizeof("s")` emit nothing). All compile to the same nothing, so pick the natural shape;
+  the literal lands in source order (an unused local's initializer comes first in its block). Probe
+  with ee-gcc -S, 2026-11-25.
 
 ## Delay slots and the assembler
 
