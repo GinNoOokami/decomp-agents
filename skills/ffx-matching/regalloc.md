@@ -7,6 +7,9 @@ Cheapest checks first; `vsweep pack` covers several of them in one call.
 - **Undeclared callee = implicit `int`.** gcc keeps v0 live after the call and the next load swaps
   v0/v1 (func_00158748: `void f(void);` matched, `s32 f(void);` didn't). Check every callee is
   declared; m2c's `/* extern */` block gets lost in hand tidying.
+  The reverse also happens (func_001AE4F8, 2026-11-25): `void func_00117E28(s32)` (Switch Sg_FadeInW
+  is void) left `lw v0`/`v1` swapped after the call; an `int` return matched. `vsweep pack`'s
+  `ret:CALLEE` lever finds it; a void callee matched as int hints the TU called it undeclared.
 - **Callee `void` vs non-void moves registers, even far from the call.** sceIoctl and
   TkSignalSemaBGThread (func_002D1C60) swapped v0/v1 at the next load several times in
   HostReadQServe (func_00255158); its last 2 words were exactly this, missed once because a rename

@@ -78,3 +78,10 @@
 - **Direct `arr[i].field` vs a pointer local** (T14): indexing a global folds a word field's offset
   into the base, giving each field its own address register; several copies of one address = direct
   indexing in the source.
+
+## Floating point
+
+- **`fptodp`/`dpcmp`/`dpdiv`/`dpsub`/`dptoli`/`dptofp` calls = `double` literals** (func_001AE4F8): the
+  EE has no double FPU, so `x > 10.0`, `x / 10.0`, `x != 0.0` on an `f32` compile to soft-float
+  calls; write the literal without `f`. m2c shows them as raw calls with `0x8048 << 0x2F` (10.0's
+  upper bits). Only literals that stay in FPU registers (`lui 0x4380` + `mtc1` = 256.0f) are `f32`.
