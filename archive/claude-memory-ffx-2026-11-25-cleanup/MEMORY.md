@@ -1,0 +1,94 @@
+- [FIRST: tools before scripts](tools-first-never-reinvent.md) — before writing ANY script/compare/sweep helper, read DecompNotes/FFX/Tools.md and use an existing tool (variant.py -f etc.); new tool only after telling the user why none fits
+- [FFX: start here](ffx-start-here.md) — goal: split the main ELF into game systems; ~/dev/ffx = user's own fresh project; work in ~/dev/ffx-analysis; alpha + US demo + PAL + JP original builds as inputs; notes in DecompNotes/FFX; reference repos in ~/dev/DecompNotes/ref/ (rozelette-ffx = matched C, globe = Sony headers, khasinski-ffx = LLM-heavy PAL decomp, ideas only: FFX/RefProjects.md)
+- [No unrequested decomp answers](no-unrequested-decomp-answers.md) — user does the matching; hints only when asked, never full/matching C (FF7 agreement)
+- [Decomp notes repo](decomp-notes-docs.md) — ~/dev/DecompNotes layout (FFX/, FF7/, PSX/, tools/), README.md index first, commit+push after every edit, write-ups are .md there
+- [Memory scope](memory-scope.md) — save only reusable how-to and preferences; findings go in the notes
+- [Goal: quality reconstruction](goal-quality-reconstruction.md) — faithful source (TUs, types, evidence names), not speed or ports
+- [Reference-project techniques](decomp-reference-techniques.md) — FFX file-edge tests (static .bss, data order, jtbl rodata alignment, shared dates), accidental-match checks, differential testing, compiler probes, library fingerprinting via source + gcc headers, hand-written asm signals, SDK ID strings, data-order file joins
+- [Emulator scripting](emulator-scripting.md) — Redux Lua facts + breakpoint-lifetime crash, screenshots; PCSX2 has no scripting (PINE, MCP fork, custom build); handing the user debugger tasks
+- [Cross-version analysis](cross-version-analysis.md) — reloc-masked alignment + order-filtered anchors, __LINE__ shifts, blanked-__FILE__ pairing, per-file .rodata blocks, delta-step = insertion size, per-build .data bytes, old builds' path tables for enums; Redump over http
+- [State evidence at real strength](state-evidence-at-real-strength.md) — quote the observation; in chat flag only inferred/unverified claims, no "Certain." tags
+- [FFX matching skill](ffx-matching-skill.md) — matching lessons/procedure/agreement live in skill ffx-matching (~/dev/decomp-agents, shared with Codex); load it for matching, hints, reviews, cleanup, type/struct decisions; new lessons go there + commit/push
+- [Windows path = copy permission](windows-path-means-copy.md) — a named /mnt file may be copied into WSL without re-asking; searching /mnt still needs asking
+- [Log.md retired](keep-working-log.md) — FFX/Log.md was the bootstrap log; now only for notable architecture decisions, never per match/investigation
+- [Community tools corroborate only](community-tools-corroborate-only.md) — modding tools and other decomps back up our evidence, never replace it; don't redo Rozelette's decompiled files
+- [Handoffs not in notes](handoffs-not-in-notes.md) — ignored DecompNotes/handoff/, rewritten in place each session: open items only, no done items, no carried-over copies, ~<100 lines; verify items against the tree; tracked notes = facts only
+- [Small files inline](small-files-inline.md) — under ~50-100 lines paste in chat, not clip handoff; Python needs no explanation, Makefiles do
+- [Repo comments self-contained](repo-self-contained.md) — no DecompNotes refs in ~/dev/ffx; code is the documentation (types/names), then comments; notes only for investigations the code can't show
+- [README upkeep](readme-upkeep.md) — standing OK to update ~/dev/ffx/README.md (small, shown for review); user-facing steps only, no implementation details
+- [Token economy](token-economy.md) — filter tool output, big results to files, grep Log.md never read whole
+- [FFX repo conventions](ffx-repo-conventions.md) — game code uses f32/s32 not float/int; game/ = all non-lib/SDK/kernel code (main, chr, atel…); VERSION var, address-named files, our own dirs (PC paths trimmed, e.g. src/common/), headers per area not per TU, tools/cc fetch, symbol_addrs headers
+- [FFX repo workflow](ffx-repo-workflow.md) — one piece per step, explain its job, user writes some, test in scratch copy first
+- [GitHub SSH remotes](github-ssh-remotes.md) — user's repos push over SSH (account key); HTTPS remotes can't push here (no credential helper)
+- [splat C-file gotchas](splat-c-file-gotchas.md) — .data ownership needs C defs, shared literals need guesser 2 + INCLUDE_RODATA, jump tables need a .rodata dot-subsegment, old-as objects, stale asm; cases in FFX/Troubleshooting.md; no colons in symbol_addrs comments, renamed D_ data needs an entry; out-of-segment symbols = absolute:true + hand-written undefined_syms.txt; `""` literals stay extern D_ arrays
+- [Cleanup notes scope](cleanup-notes-scope.md) — FFX/Cleanup.md = project-wide faithfulness items only; per-system cleanup in system notes; no style nits
+- [FF7 decomp as reference](ff7-decomp-reference.md) — ~/dev/ff7-decomp is the user's tooling model; read its code before claiming how it behaves
+- [Check own side effects](check-own-side-effects.md) — a changed file may be mine (make/splat); never leave dumps/temp files in the tree (gcc -da writes to cwd)
+- [Cite sources, honest runtime checks](cite-sources-and-runtime-checks.md) — never cite docs not opened this session; emulator checks needing rare game states are not "quick", static checks first
+- [Don't touch WIP, clean up](dont-touch-wip-and-clean-up.md) — never edit/stash the user's in-progress function; no `make format` while WIP exists (clang-format my files only); remove my worktrees/branches
+- [Check diff for current function](check-diff-for-current-function.md) — unnamed "this function" = the one in their git diff
+- [Own my output in reviews](own-my-output-in-reviews.md) — separate my earlier code/comments from the user's edits; commit author ≠ code author
+- [No in-place scripts on the tree](never-run-in-place-scripts-on-tree.md) — helpers that write their input (decompile.py) run on scratch copies only
+- [Verify match status from source](verify-match-status-from-source.md) — grep INCLUDE_ASM vs C before calling something unmatched/open
+- [Follow field copies](follow-field-copies.md) — "no reader"/"no caller" claims must cover copies and tail-jump wrappers; static pass before debugger
+- [Cleanup: cut unneeded locals](cleanup-eliminate-unneeded-locals.md) — cut only aliases/copies that add nothing; never at readability's cost (named intermediates of compound expressions stay)
+- [Agree requirements first](agree-requirements-first.md) — design talks: settle requirements before implementation/logistics
+- [Check notes before confidence](check-notes-before-confidence.md) — FFX: run notescheck.py on every address/name before reporting or proposing; split "already in notes" from "new"
+- [Explain game context](explain-game-context.md) — say where in the game a mechanism is used, not just the code
+- [Flag sets as enums](flag-sets-as-enums.md) — bit-flag sets → typedef enum; derived masks may be #defines
+- [Cleanup delivery format](cleanup-delivery-format.md) — in-chat diff or whole function via clip file, never .patch
+- [User's comments are theirs](user-comments-are-theirs.md) — my comment rules don't apply to the user's comments/style
+- [User verifies findings](user-verifies-findings-before-pr.md) — my findings are leads; only matched C counts as confirmed
+- [Cleanup checklist](cleanup-checklist.md) — default post-match cleanup steps (locals, enums, nesting, names, comments)
+- [Naming preferences](naming-preferences.md) — full words unless original symbols abbreviate (Offset not Ofs); verbs, one vocabulary per system, no overloaded words, local consts; FFX: vague name beats hex (not FF7 rule)
+- [ABI register names](abi-register-names.md) — say s0/a1/v0 as objdiff shows, never $16/$5
+- [SDK naming pass](next-sdk-signature-mapping.md) — paused 2026-10-30 (diminishing returns); leftovers in SystemSplit.md "SDK libraries: what's left"; read_debug_c patch still held
+- [Never block on background jobs](never-block-on-background-jobs.md) — permuter/long jobs in background, report and end the turn; no foreground wait loops
+- [FFX PC port workspace](ffx-pc-port-workspace.md) — Steam FFX/FFX-2 exes in ffx-analysis/builds/pc, Ghidra re-export, PC evidence = names/logic not codegen; use its control flow when m2c gives goto soup
+- [Answer before switching](answer-before-switching.md) — a mid-turn request doesn't cancel a pending question; answer it first
+- [Shell gotchas](shell-gotchas.md) — quote code heredocs, never hand-edit diffs, zsh word splitting, Shift-JIS headers need grep -a/iconv, awk glabel tracking after renames, zsh `=` expansion, quoted flag+value args, python open('w') truncates before read, FFX image vs ELF offset (+0x1000), symuse range spans strings (--size), pkill -f matches its own shell, never make while the user builds (pgrep first)
+- [No obvious match reports](no-obvious-match-reports.md) — constant swaps obviously still match; no build after comment/unused-define edits; only flag semantic misfits; "matches" = full build OK, no verification asides in notes
+- [Prefer tool features for speed](prefer-tool-features-for-speed.md) — splat/m2c/objdiff built-ins (sizes, ignore, types, options) before scripts; less m2c cleanup
+- [Tools reference](tools-reference.md) — region names from systemmap.tsv, caller scans via symuse (asm text misses .word code); check DecompNotes/FFX/Tools.md before writing scripts; extend, don't duplicate (matching-loop tools: ffx-matching skill)
+- [FFX: one build version](ffx-single-version.md) — repo builds only jp_intl; no alpha build, no alpha follow-ups
+- [Reusable outputs](reusable-outputs.md) — save every result/setup/workflow as a tool, note or script when produced; check for existing ones before redoing work
+- [Evidence by platform](evidence-by-platform.md) — cross-build evidence grouped per platform/toolchain; only codebase-certain evidence (file names, strings) shared
+- [Pilot before frameworks](pilot-before-frameworks.md) — check notes + estimate yield on one region before infrastructure; no tools for what grep does
+- [No commit trailer](no-commit-trailer.md) — never add Co-Authored-By/Claude lines to commits or PRs; use the user's message exactly
+- [Explain step by step](explain-step-by-step.md) — masks/rounding constants: plain steps + one worked value, no dense derived tables
+- [Diagrams help](diagrams-help.md) — draw layout diagrams in explanations and code comments; horizontal boxed form (ArchivePrimer bit-layout style) when it fits
+- [Line comments](line-comments.md) — FFX: our lib/game code uses `//`, never `/* */`; include/sdk keeps block style; offset tags stay
+- [Header prototypes: default only](header-prototypes-external-only.md) — FFX: per-TU codegen evidence (missing prototypes, per-file types) beats header rules; fallback: header entry only if another TU calls it
+- [Parked items stay parked](parked-items-stay-parked.md) — handoff open items are parked on purpose; check NON_MATCHING/nonmatchings before proposing, ask what to work on
+- [Sony SDK samples](sony-sdk-samples.md) — sample code as pattern source; ref/globe g20 samples, ref/sce-sdk-242 (partial), Shift-JIS, real SDK names for constants
+- [Callee TU before role](callee-tu-before-role.md) — check where callees live before naming a path (fd branch was HDD, not host)
+- [Usage budget](usage-budget.md) — user keeps hitting the weekly limit; cheapest step first, estimate depth before deep dives, flag when a task gets expensive
+- [Troubleshooting entries](troubleshooting-entries.md) — offer a Troubleshooting.md case only for problems the user hits repeatedly (verified fix); one-off traps stay in my memory; gcc-internals lessons go to matching memory
+- [nextfunc calibration](nextfunc-calibration.md) — after-match harder/easier/same vs a recent non-twin reference, logged in ffx-analysis/data/nextfunc_ratings.tsv; no --ref option (user wants the tool lean)
+- [Tools lean, evaluate first](tools-lean-evaluate-first.md) — offer refinements briefly, build on a yes; bigger ideas go to ToolingIdeas.md; fix reported bugs right away
+- [PS2 graphics background](user-ps2-graphics-background.md) — user has no GS/GIF/DMA/SDK graphics background; explain the hardware term first, tables, a Sony sample
+- [SDK-heavy matches, self-managing tools](sdk-heavy-cheat-ok.md) — user may ask me to apply a full match for SDK-heavy functions; tools may delete their own marker-guarded output dirs
+- [PS2 hardware manuals](ps2-hardware-manuals.md) — ref/PS2Docs PDFs + grep copies in ref/PS2Docs-txt; page = form feeds + 1; pages for DMA/GIF/GS registers
+- ["Apply" = edit my code](apply-means-edit.md) — "apply X" is permission to edit their code with the proposed changes; re-read first, they may have started
+- [Stop stray background jobs](stop-stray-background-jobs.md) — timed-out commands keep running; TaskStop them once unneeded/wrong (find / crawled /mnt)
+- [Split targets serve the goal](split-targets-serve-goal.md) — pick files covering extern.h functions, not the easiest edge; .data blocks / alpha gaps / .bss signals; scratch-build, then move prototypes
+- [Pull in related constants](pull-in-related-constants.md) — only exception to used-only headers: first constant of a set needed → add the whole group (magic numbers hide without defs); prototypes stay used-only
+- [Name matched functions only](add-symbol-names-for-user.md) — never name an INCLUDE_ASM function; agreed names for matched ones: I edit symbol_addrs.txt + C rename + make; user still picks the name
+- [Switch counterpart every function](switch-counterpart-every-function.md) — swfunc.py FUNC first; stale/no row → builds/switch/out/functions.tsv (full list, never swx2/shared.tsv) + swfunc --sw; bulk pairing: slot tables, assert-line deltas, verify bodies before renaming
+- [Switch inlining trap](switch-inlining-trap.md) — big Switch vs PS2 size gap (or a string pair on a worker) = check PS2 neighbours/signature for inlined code before naming; name the entry, not the helper
+- [Read code before describing](read-code-before-describing.md) — quote the deciding line before stating what a branch/flag does; check mechanical causes (inlining, init-value sections) before stories
+- [Analysis tools from HEAD copy](analysis-tools-from-head-copy.md) — layout/swpair/xmap etc. run on a scratch worktree at HEAD, never the live tree (user WIP leaks in)
+- [Lead comment shape](lead-comment-shape.md) — one short line with the hypothesis and "?" (e.g. "the controller type ID libpad reports?"); evidence in chat, never restate the code
+- [Renames drop redundant comments](rename-drops-redundant-comments.md) — renamed field/var: delete the comment if the name now says it; keep only extra info
+- [Scope answer is not "go"](scope-answer-is-not-go.md) — "do it all in one pass" on a noted TODO = how, not when; finish the current function first
+- [No layout nits](no-layout-nits-clang-format.md) — FFX: never flag one-line bodies/braces in cleanups; .clang-format (LLVM) decides layout
+- [Struct offset tags](struct-offset-tags.md) — FFX: every proposed struct member gets /* 0xNN */; no size: tag on [0]-tail structs; style guide planned, not now
+- [Name-candidate lead comment](name-candidate-lead-comment.md) — FFX: matched func with no Switch symbol + candidate name -> propose `// Name?` above it, keep func_
+- [Warnings must be deliberate](warnings-must-be-deliberate.md) — FFX: NEVER mention the known .space warning (filter every make with grep -v 'repeat count is zero'); no new warnings unless required for a match
+- [Session mini-retro](session-mini-retro.md) — FFX: end sessions with a short retro (repeated steps, misses, round trips); first retro proposals pending
+- [Persistent scratch repo](persistent-scratch-repo.md) — FFX: full-build checks in ~/dev/ffx-analysis/out/scratchrepo via scripts/scratch.py (sync + edits file + --make), not hand rsync/edit scripts
+- [Cleanup applies trivial items](cleanup-applies-trivial.md) — FFX: FIRST command of a cleanup turn = `git diff --quiet; echo $?`; 0 (staged-only is clean) → apply trivial items + Switch renames, then report; judgement items still proposed
+- [Check refs first](check-refs-first.md) — FFX split/matching: khasinski tu_map.tsv, Rozelette yaml, ref/globe Sony sources before own tool passes; leads only
+- [Notes: short, no mechanical facts](notes-short-mechanical-facts.md) — "note X" = 1-2 lines; overlaps/folds a tool can check need no notes
+- [Repo tools: high quality](repo-tools-high-quality.md) — tools in ~/dev/ffx/tools must be readable, human-comprehensible; rewrite prototypes before proposing
+- [Proposal vs applied wording](proposal-vs-applied-wording.md) — say "for you to apply" vs "I edited"; diff against their current code; no side remarks about my notes

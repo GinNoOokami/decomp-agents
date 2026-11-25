@@ -1,6 +1,6 @@
 ---
 name: ffx-matching
-description: Matching FFX (PS2) functions byte-for-byte in ~/dev/ffx with ee-gcc 2.9. Working agreement, procedure, and verified codegen lessons indexed by symptom. Use when matching, giving matching hints, reviewing a translated function, cleaning up a matched function, deciding types, struct layouts or global declarations from asm, or stuck on a register, order, layout or size difference.
+description: Matching FFX (PS2) functions byte-for-byte in ~/dev/ffx with ee-gcc 2.9. Working agreement, procedure, and verified codegen lessons indexed by symptom. Use when matching, giving matching hints, reviewing a translated function, deciding types, struct layouts or global declarations from asm, or stuck on a register, order, layout or size difference. Cleanup of matched code (names, comments, constants, declaration placement) is the ffx-cleanup skill.
 ---
 
 # FFX matching

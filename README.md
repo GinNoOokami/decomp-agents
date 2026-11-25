@@ -9,7 +9,9 @@ Shared knowledge for the coding agents (Claude Code, Codex) working on my decomp
 | `skills/<name>/` | Agent skills: `SKILL.md` (frontmatter `name` + `description` only) plus reference files |
 | `archive/` | Snapshots of agent memory before content moved here; local history, never copied elsewhere |
 
-Skills: `ffx-matching` (FFX matching: working agreement, procedure, ee-gcc lessons by symptom).
+Skills: `ffx-matching` (FFX matching: working agreement, procedure, ee-gcc lessons by symptom),
+`ffx-cleanup` (FFX cleanup of matched code: checklist, apply-vs-propose, names, comments, constants,
+declarations).
 
 ## How agents load it
 
