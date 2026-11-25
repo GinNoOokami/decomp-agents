@@ -26,6 +26,13 @@
   folder has: no C change fixes it; check with `tcident.py asmsigns -v` and Toolchain.md's assembler
   map (T16), and raise it with the user as a `DTLS_DIRS`/file-placement question. Target
   `access; jr ra; nop` with your build filling the slot = the access must be `volatile`.
+- **Watch item: battle's assembler rests on thin evidence.** `src/game/battle` joined `DTLS_DIRS` on
+  one sign (func_001AF188) and none against (Toolchain.md, "Which code used which assembler"); the
+  user accepted that to move forward and wants contradictions raised. While matching or scanning
+  battle code (including the `Ms*` camera code once split), flag at once: a function that matches only
+  with -01 (`variant.py --asm dtls` vs the default), or a target with a fillable `P; jr ra/jal/b; nop`
+  slot in a plain function. After a folder is added to `DTLS_DIRS`, recheck with a clean rebuild of
+  its objects (they don't depend on the Makefile).
 - **`lq $8; jr; sq $8`** = a Sony-style inline asm copy assembled by dtls13010 (func_001AF188), like
   libvu0's sceVu0CopyVector (which uses $6): `asm volatile("lq $8,0(%1)\n sq $8,0(%0)" : : "r"(dst),
   "r"(src) : "$8")`; full build OK with that object assembled by dtls13010. Try the other assembler
