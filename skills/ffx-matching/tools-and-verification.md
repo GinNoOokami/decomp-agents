@@ -13,7 +13,9 @@ Locations and options: `~/dev/DecompNotes/FFX/Tools.md`. Check it before writing
   sidestepped with `#define func_X func_X_hdr` around the include; `--proto` also rewrites the file's
   own declaration.
 - **Full build** for "matches": `scratch.py` syncs the scratch repo, applies an edits file and runs
-  `--make`. variant.py masks relocations.
+  `--make`. variant.py masks relocated fields and jal targets, then on a match checks each named
+  relocation by address (swapped globals fail); section-relative relocations (string literals, jump
+  tables) and unresolved names stay unchecked, and data layout isn't compared.
 - **Compare assembled objects, never `-S` text.** Most branches are emitted under `.set reorder`; the
   line after a branch is not its delay slot there and gas inserts the `nop` (func_001648F8: a false
   "unsolved difference").

@@ -24,7 +24,11 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
   `x & ~mask` got used as code and cost a `nor`). When several variants tie, report the simplest one,
   closest to the user's code. Offer the next hint rather than the answer.
 - **"Matches" = full build, sha1 OK**, in the scratch repo (`scratch.py --make`). variant.py MATCH
-  masks relocations (swapped symbols still pass).
+  checks named relocations by address, but not section-relative ones (string literals, jump tables)
+  or unresolved names (its summary says how many), and it never sees .rodata/.data layout.
+- **Hint requests** ("tips", "suggestions", "hints"): do the procedure's first two steps anyway
+  (target `.s`, Switch/PC counterparts, refs), then give the one hint that unblocks the first problem,
+  and offer the next instead of listing everything.
 - **Two phases.** While the user is turning m2c into C, review behaviour and control flow only;
   register, stack-slot and block-placement differences wait until they say they are matching. Say
   which kind of check was run (logic read, scratch compile, full build).
@@ -37,7 +41,10 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
 - **No fake matches.** A `goto`, an empty `do {} while (0)`, a local holding a constant, permuter
   oddities: diagnostics that say "the structure differs here", never progress. This holds even when
   such a version matches: the one or two matched functions with gotos (func_001632B8) only mean the
-  natural shape hasn't been found; there is no hard evidence the original used gotos. C nobody would
+  natural shape hasn't been found; there is no hard evidence the original used gotos, so keep looking
+  for the natural shape. Status for such a match: "goto match, natural shape not found, N structured
+  shapes ruled out". Hard evidence would be a pass-rule proof from the gcc source that no structured
+  construct gives the target's RTL, each candidate shape failing for a stated reason. C nobody would
   write means wrong types or layout (see types-and-shapes.md).
 - **"Unmatched" claims come from the source:** grep INCLUDE_ASM vs C before calling a function open.
   An unnamed "this function" is the one in the user's git diff.

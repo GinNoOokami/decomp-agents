@@ -45,10 +45,13 @@ at, or is named in the report as skipped:
   the next step is concrete and cheap (an FF7 "I'd stop here" at 116/115 insns matched minutes
   later); once a match has been stubborn for a few rounds, list parking as one option beside the next
   step. The user decides, and parks things themselves when the budget says so.
-- **Parking** (when the user says so): wrap the user's *current* C (re-read it first) in
+- **Parking.** "Park it" from the user is permission to edit their file; no further go-ahead needed.
+  The user decides; don't argue against it. Steps: (1) in the report, name any idea source from the
+  list above that wasn't covered, so the note records it; (2) wrap the user's *current* C (re-read it
+  first) in
   `#ifndef NON_MATCHING` / `INCLUDE_ASM` / `#else` / C / `#endif`, comment starting with the substance
-  (words off + cause); add a prototype above if same-TU C callers need one. Write
+  (words off + cause); add a prototype above if same-TU C callers need one; (3) write
   `FFX/nonmatchings/<ADDR>.md` + README row with status `open` (via `nmnote.py --facts`; tried variants
-  via `variant.py --log`), commit and push the notes, full build. Best-version C only in the note
+  via `variant.py --log`) including the uncovered sources, commit and push the notes; (4) full build. Best-version C only in the note
   folder, never target `.s`.
 - Parked items stay parked; don't re-propose them.
