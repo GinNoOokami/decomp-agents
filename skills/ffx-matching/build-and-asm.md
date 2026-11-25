@@ -10,6 +10,12 @@
   align:0x10` in symbol_addrs. Full-build after any match that changes .rodata ownership.
 - **Shared rodata literal:** when an asm sibling still uses a string symbol kept by INCLUDE_RODATA, the
   C must pass that extern, not a literal (+16 bytes otherwise).
+- **A string no code references:** it has no label, so splat folds it into the label before it and it
+  lives in that function's `.s`; once the function is C the string disappears and later `.rodata`
+  moves up. Fix: a `D_<addr> = 0x<addr>;` entry in symbol_addrs.txt (the file is in address order:
+  insert at its address), so splat writes `nonmatchings/<unit>/D_<addr>.s`, plus
+  `INCLUDE_RODATA` for it right after the function. func_001AD0E8 / `"btl_chr"` (0x56DCA8): full
+  build sha1 OK in a scratch repo, 2026-11-24 session.
 
 ## Building .bss and .rodata from C
 

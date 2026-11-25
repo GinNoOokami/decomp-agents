@@ -36,8 +36,9 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
   difference too; never call an m2c artifact (an extra guard, a leftover tail) harmless without
   compiling it.
 - **Hands off the user's work.** Never edit the function they are working on; work on scratch copies.
-  Exceptions only when asked: parking (stuck.md), "apply X" (re-read their file first), or a full
-  match they explicitly request.
+  Exceptions only when asked: parking (stuck.md) and "apply X" (re-read their file first). A full
+  match they ask for ("match it for me") is delivered for the user to apply (the function plus any
+  config edits, in the agent's usual copy format); the tree is edited only on "apply".
 - **No fake matches.** A `goto`, an empty `do {} while (0)`, a local holding a constant, permuter
   oddities: diagnostics that say "the structure differs here", never progress. This holds even when
   such a version matches: the one or two matched functions with gotos (func_001632B8) only mean the
@@ -67,9 +68,14 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    repos (khasinski `tu_map.tsv`, Rozelette, `ref/globe` Sony sources), matched siblings in the TU.
    PC keeps helper boundaries that Switch inlines: an inline's real signature comes from PC. Find a
    PC body through a known PC caller's callees (TkScanControler's counterpart calls 0x889940 twice).
+   Always do the Switch lookup (it is also the naming evidence); stop gathering the rest once one
+   counterpart pins the shape or the first compile matches. Parking still needs every source
+   covered (stuck.md).
 3. **Look up the symptom** in the index below and in Troubleshooting.md's index.
 4. **Compile only through the tools:** `variant.py FILE FUNC -f snippet.c` (`--repo` when headers
    change). Check Tools.md before writing any script; extend a tool rather than add a one-off.
+   `scratch.py` syncs the user's WIP as is; for a replacement definition plus config edits, run
+   `--fn` first, then `--no-sync -e … --make`.
 5. **Near-match:** `vsweep.py SRC FUNC pack` on *every* new best version (levers interact), then
    `variant.py --proto` for prototype tests, `rtl.py --diff A.c B.c` for "why does B fix it",
    `rtl.py --priority` for register choices.
@@ -79,10 +85,10 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    pass is cheaper than many builds and answers *why* (func_00163950 / func_00255158: ~15 variants
    over a session, 83-90%, none natural, gcc source never opened).
 7. **Stubborn:** stuck.md (cover every idea source, tried tables, parking).
-8. **After a match:** full build (never while the user is building: `pgrep make` first); offer
-   `tidy_externs.py`; rename only matched functions, with the user picking the name; log the
-   harder/easier/same rating against a recent non-twin match in
-   `~/dev/ffx-analysis/data/nextfunc_ratings.tsv`.
+8. **After a match:** full build (never while the user is building: `pgrep make` first). Once the
+   match is in the tree (not for one that exists only in scratch): offer `tidy_externs.py`; rename
+   only matched functions, with the user picking the name; log the harder/easier/same rating
+   against a recent non-twin match in `~/dev/ffx-analysis/data/nextfunc_ratings.tsv`.
 
 ## Symptom index
 
