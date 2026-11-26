@@ -66,6 +66,7 @@ calibration) are in FileBoundaries.md "Signals and how far they hold".
 | 5 | Date getters | AlphaBuild.md list | which side of the edge, by the alignment test |
 | 6 | Call direction | `calldir.py gaps LO HI`; callers per function (`symuse.py FUNC`) | leads only; callers only inside the file suggests `static` |
 | 7 | Other builds | `xmap.py lookup ADDR` at both sides | a function missing in an older build, or alpha-only code International dropped, often sits at a file end; a delta step inside a run is an insertion, not an edge |
+| 8 | Per-object `.data` blocks | `.data` users per block (`symuse.py ADDR --size --range`) | gcc emits one `.data` block per object: far-apart blocks used by neighbouring functions = separate files (TK layer, 2026-11-10); high `.bss` blocks with no outside users are weak alone |
 
 Queries on the layout db (`DB=$(layout.py db)`; addresses are vram):
 
