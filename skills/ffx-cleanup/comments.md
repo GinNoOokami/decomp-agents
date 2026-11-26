@@ -7,7 +7,8 @@
 - **String globals get their contents side by side, always:** a `D_` extern holding a string
   (`.data` or `.rodata`) reads `extern char D_00316F50[]; // "btlenv.txt"`. Read the ELF bytes
   for every data global the function touches before typing it; this comment is standard, never
-  an optional item.
+  an optional item. It is a stand-in: once the section is split and the literal moves inline
+  into the matched C (or the C defines the string), the extern and its comment go.
 - **Not what the code visibly does,** latent bugs included ("Reuses the table index" was rejected).
   Exception: a `// bug:` comment when the consequence isn't visible (TkCloseControler's negative
   port reads `D_0078A7C0[-1]`).
