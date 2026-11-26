@@ -5,6 +5,10 @@ as a global (T5), undeclared `sp` locals (T6), guards hiding a return value (T7)
 (T8), wrong call arguments (T9), range checks (T10), `%hi` loaded on two paths (T17), `!= K` counters
 (T19). Extra points:
 
+- **`.unk-598`-style fields are the global itself.** When one `lui %hi(X)` serves several stores, the
+  disassembly may print the later `%lo` as a raw negative offset (`sw v0, -0x598(s1)`), and m2c makes it
+  a field of X. `%lo` is signed: `%lo(0x65FA68)` = 0xFA68 = -0x598, so it's just `X = v`
+  (MsBattleReadDataNB's state global D_0065FA68).
 - **Arguments set in a tail call's delay slot are dropped** (`j func` + `addiu a2, zero, 0x14D`, the
   assert line passed to func_00254F18); m2c shows them missing or invents params. Read the slot.
 - **Argument registers set before a `jal` are real arguments** even if the callee ignores them
