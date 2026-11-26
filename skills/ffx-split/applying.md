@@ -47,13 +47,13 @@ object):
 ## Scratch build
 
 ```sh
-scratch.py -e edits.py            # sync ~/dev/ffx into out/scratchrepo + apply 3-tuple yaml edits
+python3 scripts/scratch.py -e edits.py   # sync ~/dev/ffx into out/scratchrepo + apply 3-tuple yaml edits
 cd ~/dev/ffx-analysis/out/scratchrepo && make 2>&1 | grep -v 'repeat count is zero' | tail
 ```
 
 Expect `SLPS_250.88.bin: OK`. Then check in `build/jp_intl/SLPS_250.88.map` that each new object's
 `.text` and `.rodata` start at the yaml addresses and the next asm segment starts where it should
-(`grep -n '56e0[0-9a-f]\{2\}' …map`). Never build while the user builds (`pgrep -a make`).
+(`grep -n -E '^ \.(text|rodata) +0x0*<addr>' …map`, lowercase hex). Never build while the user builds (`pgrep -a make`).
 
 ## Proposal and after
 
