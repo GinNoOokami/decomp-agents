@@ -31,8 +31,9 @@
   PCSX2 exited (cause unverified). Pause before every set/remove, resume after, one at a time.
 - The kernel idle loop is around PC 0x81FC0; a pause there is not a hit.
 - `pcsx2watch.py` runs (log and hold) left **temporary stepping breakpoints** at pause/step PCs
-  (2026-11-25: 0x1AFAEC, 0x1E7320) after removing their memcheck. Cleanup = `list_memchecks`
-  **and** `list_breakpoints` (`req({'cmd': ...})`), remove leftovers while paused.
+  (2026-11-25: 0x1AFAEC, 0x1E7320) after removing their memcheck; it now removes new ones on exit.
+  Hand-made pauses/steps can leave them too: cleanup = `list_memchecks` **and**
+  `list_breakpoints` (`req({'cmd': ...})`), remove leftovers while paused.
 
 ## Tools (`~/dev/ffx-analysis/scripts/`)
 
