@@ -54,7 +54,10 @@
 - **Fields a function stores together get one vocabulary** (`fieldIndex`/`groupIndex`/`entryIndex`
   for the battle to run, matching the BtlList functions), with one block comment if they form a
   group.
-- **A getter with an original name names its field** (`MsGetEncountType` → `encountType`).
+- **A getter with an original name names its field** (`MsGetEncountType` → `encountType`). The
+  getter's word is the base, not the whole name: when it alone is vague, add what the evidence
+  shows (`MsBattleGetDraw` → `debugDraw`: no caller and no non-zero store in either release, so
+  only debug code sets it). Check the field's writers and the getter's callers on both builds.
 - **One vocabulary per system:** when names move to a new vocabulary, all identifiers of the system
   move at once (functions, globals, fields, defines, header entries, symbol_addrs). Ambiguity a new
   name creates is resolved in the same change.
