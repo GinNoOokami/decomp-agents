@@ -30,6 +30,9 @@
 - **Crash:** setting a breakpoint while the game ran (several already armed) got no reply and
   PCSX2 exited (cause unverified). Pause before every set/remove, resume after, one at a time.
 - The kernel idle loop is around PC 0x81FC0; a pause there is not a hit.
+- `pcsx2watch.py` runs (log and hold) left **temporary stepping breakpoints** at pause/step PCs
+  (2026-11-25: 0x1AFAEC, 0x1E7320) after removing their memcheck. Cleanup = `list_memchecks`
+  **and** `list_breakpoints` (`req({'cmd': ...})`), remove leftovers while paused.
 
 ## Tools (`~/dev/ffx-analysis/scripts/`)
 
@@ -48,6 +51,12 @@
 - Battle state `btl` = 0x316F70: status byte `+0x10` (0x316F80, 0 = no battle, 0x0A while the
   battle scene starts, 1 in battle), encounter effect type `+0x105` (0x317075).
 - Effect modules load at 0x01B00000.
+
+## Script-set values revert pokes
+
+A field a script command writes is often re-asserted (2026-11-25: battle command 0x7099 rewrote
+`btl` +0x20FD every cursor move, so a poke lasted 1-3 s and looked like "no effect"). Before
+reading a poke as refuted, check the write log for a writer after the poke; then use `--hold`.
 
 ## Worked example (2026-11-25, `btl.draw` +0x20FC)
 
