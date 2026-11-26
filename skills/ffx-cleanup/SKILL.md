@@ -92,7 +92,10 @@ Per-file cleanup is large and rare, so reworking an applied change costs more th
    comments the new names made redundant; update the handoff's leads if a lead was settled.
 
 Report which locals or shapes the match required (in chat, not as comments), which names are
-guesses, and the rename line when a name exists.
+guesses, and the rename line when a name exists. For an ambiguous name (several readings fit),
+add one short reason: where the word comes from and what kind of value it is (`step`: "from the
+caller's counter; the callee only tests it for 0"). The user tunes names to taste, so a solid
+first candidate plus its reason beats asking (user, 2026-11-26).
 
 ## Per-function checklist
 
