@@ -56,8 +56,11 @@
   group.
 - **A getter with an original name names its field** (`MsGetEncountType` → `encountType`). The
   getter's word is the base, not the whole name: when it alone is vague, add what the evidence
-  shows (`MsBattleGetDraw` → `debugDraw`: no caller and no non-zero store in either release, so
-  only debug code sets it). Check the field's writers and the getter's callers on both builds.
+  shows, or keep the word and add a `?` lead comment. Before claiming "never set" or "debug only",
+  search **all** of `asm/jp_intl` (the big unsplit `.s` segments too, not just `nonmatchings/`)
+  for `0xOFF(` stores: `MsBattleGetDraw`'s field looked debug-only until `1AF888.s` showed the
+  battle state machine setting it (`debugDraw` was applied, then reverted to `draw`). Switch
+  offset greps miss stores through other base pointers; absence there is weak.
 - **One vocabulary per system:** when names move to a new vocabulary, all identifiers of the system
   move at once (functions, globals, fields, defines, header entries, symbol_addrs). Ambiguity a new
   name creates is resolved in the same change.
