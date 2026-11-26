@@ -31,9 +31,16 @@ Tools live in `~/dev/ffx-analysis/scripts/` (index: `~/dev/DecompNotes/FFX/Tools
     moving m2c's `/* extern */` lines to their block, offset tags, enum-for-literal swaps that
     compile, agreed header/extern moves, side-by-side lead comments on settled globals.
   - **1 (unstaged changes):** propose everything; the tree is the user's.
-  - **Always proposed, whatever the state:** our own names, lead-comment names, types, struct
-    changes, constants/defines, anything uncertain. "Go ahead" / "apply" on a proposal is
-    permission for exactly that list; re-read the file first, the user may have edited it.
+    Also trivial when clean (evidence-backed, compiled): global renames to Switch-exported names
+    whose Switch use matches ours (`rename.py --data --switch`, check the size attribute), types
+    the ELF bytes or Switch settle (`char[]` for a string), `// Switch Name?` leads from a
+    matching call site, compiled tidy-ups (`!= 0` on flags, stray `&`, casts), prototypes into
+    the existing area header (devkit.h, battle.h). "Cleanup" on a clean tree = apply all of this
+    in one go, then report; don't stop for a "go ahead".
+  - **Always proposed, whatever the state:** names we invent (no Switch/original source), struct
+    layout changes, new defines/enums, anything uncertain or contested. "Go ahead" / "apply" on a
+    proposal is permission for exactly that list; re-read the file first, the user may have
+    edited it.
 - **Never touch the user's in-progress function** beyond what they asked for, and never undo their
   edits or style (decimal vs hex, their comments; see comments.md).
 - **Every edit is checked:** a full build (`make`, filter `grep -v 'repeat count is zero'`, expect
