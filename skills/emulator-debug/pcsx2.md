@@ -7,7 +7,8 @@
   hangs. WSL reaches it only with mirrored networking (`networkingMode=mirrored`); before that,
   `scripts/dbg.ps1` relayed through `powershell.exe`.
 - Client: `~/dev/ffx-analysis/scripts/pcsx2.py` (`req`, `status`, `read`, `write`). One JSON line
-  per connection.
+  per connection. Other commands: `pcsx2.req({'cmd': 'list_breakpoints'})` (key `cmd`, address
+  arguments as ints); a wrong key answers `Unknown command` with the command list.
 - Build check: read a known instruction word, e.g. `pcsx2.read(0x1AE078, 4)` = `fc2000a2`
   (International `MsBattleExe` store).
 
@@ -30,16 +31,16 @@
 - **Crash:** setting a breakpoint while the game ran (several already armed) got no reply and
   PCSX2 exited (cause unverified). Pause before every set/remove, resume after, one at a time.
 - The kernel idle loop is around PC 0x81FC0; a pause there is not a hit.
-- `pcsx2watch.py` runs (log and hold) left **temporary stepping breakpoints** at pause/step PCs
-  (2026-11-25: 0x1AFAEC, 0x1E7320) after removing their memcheck; it now removes new ones on exit.
-  Hand-made pauses/steps can leave them too: cleanup = `list_memchecks` **and**
-  `list_breakpoints` (`req({'cmd': ...})`), remove leftovers while paused.
+- Pausing on a memcheck hit and stepping can leave **temporary stepping breakpoints**
+  (`temporary`/`stepping` in `list_breakpoints`) at those PCs (2026-11-25: 0x1AFAEC after a
+  logging run, 0x1E7320 after a hold step). `pcsx2watch.py` removes the ones it left; after hand
+  pauses/steps, remove them while paused.
 
 ## Tools (`~/dev/ffx-analysis/scripts/`)
 
 | Tool | Use |
 |---|---|
-| `pcsx2watch.py ADDR [--show NAME=ADDR[:LEN]] [--hold HEX --at PC] [--minutes N] [--log F]` | who writes an address; hold a value past one store; always removes its memcheck (also on SIGTERM) |
+| `pcsx2watch.py ADDR [--show NAME=ADDR[:LEN]] [--hold HEX --at PC] [--minutes N] [--log F]` | who writes an address; hold a value past one store; always removes its memcheck and any temporary breakpoints it left (also on SIGTERM) |
 | `fnlog.py <secs> exec` | script native-function calls via the dispatchers (a0 = id); label file `out/fnlog.label`, stop file `out/fnlog.stop` |
 | `loadlog.py` | archive loads / CD reads / effect loads via breakpoints |
 | `pcsample.py`, `modecover.py` | PC sampling by region; hottest functions per mode |

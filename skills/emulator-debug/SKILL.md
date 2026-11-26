@@ -31,8 +31,9 @@ Per-emulator files:
   - anything that changes game state is announced first, in one line: memory writes (pokes),
     holding a value, PC changes, stepping past code.
 - **Savestate before each test** (the user makes it); a crash then costs nothing.
-- **Clean up every run:** memchecks and breakpoints removed (check the list command), background
-  pollers stopped, the game resumed. Say so in the report.
+- **Clean up every run:** memchecks and breakpoints removed (check both lists; pausing and
+  stepping can leave temporary breakpoints), background pollers stopped, the game resumed. Say so
+  in the report.
 - **Background, never blocking:** long runs go in the background; the user plays and says when the
   game state is reached; read the log then.
 
@@ -47,6 +48,8 @@ Per-emulator files:
    statically before arming more.
 5. **Manipulate only to test meaning:** hold or poke after the writers are known, with the
    predicted visible effect stated first ("held at 0, the transition should never finish").
+   Tell the user exactly which inputs to try and what each should do (a poke changes nothing
+   until the user acts: "press Up/Down and Left/Right on the target cursor").
 6. **Report and clean up.**
 
 ## Recipes: what each proves
