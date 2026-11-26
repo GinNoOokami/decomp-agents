@@ -33,7 +33,8 @@ Tools live in `~/dev/ffx-analysis/scripts/` (index: `~/dev/DecompNotes/FFX/Tools
   - **1 (unstaged changes):** propose everything; the tree is the user's.
     Also trivial when clean (evidence-backed, compiled): global renames to Switch-exported names
     whose Switch use matches ours (`rename.py --data --switch`, check the size attribute), types
-    the ELF bytes or Switch settle (`char[]` for a string), `// Switch Name?` leads from a
+    the ELF bytes or Switch settle (`char[]` for a string, plus its `// "contents"` comment),
+    `// Switch Name?` leads from a
     matching call site, compiled tidy-ups (`!= 0` on flags, stray `&`, casts), prototypes into
     the existing area header (devkit.h, battle.h). "Cleanup" on a clean tree = apply all of this
     in one go, then report; don't stop for a "go ahead".

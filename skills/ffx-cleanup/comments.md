@@ -4,6 +4,10 @@
 
 - **Only what the code can't show:** meaning of data, why a check exists, a formula's intent, what
   a bit layout holds (`// high nibble = current weight, low nibble = base weight`).
+- **String globals get their contents side by side, always:** a `D_` extern holding a string
+  (`.data` or `.rodata`) reads `extern char D_00316F50[]; // "btlenv.txt"`. Read the ELF bytes
+  for every data global the function touches before typing it; this comment is standard, never
+  an optional item.
 - **Not what the code visibly does,** latent bugs included ("Reuses the table index" was rejected).
   Exception: a `// bug:` comment when the consequence isn't visible (TkCloseControler's negative
   port reads `D_0078A7C0[-1]`).
