@@ -39,7 +39,9 @@ Per-file cleanup is large and rare, so reworking an applied change costs more th
 
 - **First command of every cleanup turn: `git diff --quiet; echo $?`.** Run it, don't read
   `git status`: `M ` (staged only) counts as clean. Check again right before editing, since the
-  user stages WIP around their messages.
+  user stages WIP around their messages, and **again as the last command before sending a
+  proposal**: the user often stages right after sending the prompt, so an early "1" may be stale.
+  If it turned 0, apply instead of proposing.
   - **0 (clean), per-function:** apply every item of the procedure in one go, build, report. That
     includes Switch renames (functions with body + position checked; globals via `rename.py --data
     --switch` when Switch uses them like ours, check the size attribute), types the ELF bytes or
