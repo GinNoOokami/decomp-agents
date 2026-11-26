@@ -1,6 +1,6 @@
 ---
 name: ffx-cleanup
-description: Cleaning up matched FFX (PS2) functions in ~/dev/ffx: the cleanup checklist, what to apply directly vs propose, Switch-backed function renames, local/parameter/field/global names, lead comments, constants and defines, declaration placement, and reading-quality code shape. Use when asked for "cleanup" of a function or TU, when proposing names or comments for matched code, or when reviewing the user's cleanup.
+description: Cleaning up matched FFX (PS2) code in ~/dev/ffx: per-function cleanup (applied directly) and the per-file pass once a TU is fully matched (proposed first), checklists, Switch-backed function renames, local/parameter/field/global names, lead comments, constants and defines, declaration placement, and reading-quality code shape. Use when asked for "cleanup" of a function or TU, when proposing names or comments for matched code, or when reviewing the user's cleanup.
 ---
 
 # FFX cleanup
@@ -21,35 +21,45 @@ Reference files:
 
 Tools live in `~/dev/ffx-analysis/scripts/` (index: `~/dev/DecompNotes/FFX/Tools.md`).
 
+## Two passes
+
+The workflow is: match → per-function cleanup → repeat until the TU has no `INCLUDE_ASM` →
+per-file cleanup (when possible).
+
+| | Per-function | Per-file |
+|---|---|---|
+| When | right after each match ("cleanup") | the whole TU is matched (no parked nonmatchings: they block moving `.data`/`.rodata` in) |
+| Scope | the function and the globals, fields, prototypes it touches | the TU: data ownership, linkage, headers, vocabulary |
+| Mode (clean tree) | **apply everything, build, report**; the user raises changes afterwards | **propose a plan, agree it, then apply** |
+
+Per-function cleanup is small and frequent, so a round trip costs more than a later correction.
+Per-file cleanup is large and rare, so reworking an applied change costs more than agreeing first.
+
 ## Working agreement (always applies)
 
 - **First command of every cleanup turn: `git diff --quiet; echo $?`.** Run it, don't read
   `git status`: `M ` (staged only) counts as clean. Check again right before editing, since the
   user stages WIP around their messages.
-  - **0 (clean):** apply the trivial items yourself, build, then report. Trivial = a Switch-backed
-    function rename (body and position checked), parameter names taken from the callee or Switch,
-    moving m2c's `/* extern */` lines to their block, offset tags, enum-for-literal swaps that
-    compile, agreed header/extern moves, side-by-side lead comments on settled globals.
-  - **1 (unstaged changes):** propose everything; the tree is the user's.
-    Also trivial when clean (evidence-backed, compiled): global renames to Switch-exported names
-    whose Switch use matches ours (`rename.py --data --switch`, check the size attribute), types
-    the ELF bytes or Switch settle (`char[]` for a string, plus its `// "contents"` comment),
-    `// Switch Name?` leads from a
-    matching call site, compiled tidy-ups (`!= 0` on flags, stray `&`, casts), prototypes into
-    the existing area header (devkit.h, battle.h). "Cleanup" on a clean tree = apply all of this
-    in one go, then report; don't stop for a "go ahead".
-  - **Always proposed, whatever the state:** names we invent (no Switch/original source), struct
-    layout changes, new defines/enums, anything uncertain or contested. "Go ahead" / "apply" on a
-    proposal is permission for exactly that list; re-read the file first, the user may have
+  - **0 (clean), per-function:** apply every item of the procedure in one go, build, report. That
+    includes Switch renames (functions with body + position checked; globals via `rename.py --data
+    --switch` when Switch uses them like ours, check the size attribute), types the ELF bytes or
+    Switch settle (`char[]` + `// "contents"` for strings), leads (`// Switch Name?`, `// name?`),
+    our own parameter/local/field names, defines, struct gap splits, compiled tidy-ups, prototypes
+    into the existing area header. Don't stop for a "go ahead"; mark guesses in the report.
+    Exception: a function without a Switch/original name keeps `func_` and gets a `// Name?` lead
+    (the user picks function names).
+  - **0 (clean), per-file:** propose the plan (per-file section below); apply only the agreed list.
+  - **1 (unstaged changes):** propose everything; the tree is the user's. "Go ahead" / "apply" on
+    a proposal is permission for exactly that list; re-read the file first, the user may have
     edited it.
 - **Never touch the user's in-progress function** beyond what they asked for, and never undo their
   edits or style (decimal vs hex, their comments; see comments.md).
 - **Every edit is checked:** a full build (`make`, filter `grep -v 'repeat count is zero'`, expect
   `OK`) before reporting; never while the user builds (`pgrep -a make`). Comment-only edits need no
   build. Back up a file to scratch before editing it.
-- **Proposals compile first.** Every code proposal (removed local, define, reordered statement)
-  is tested in `variant.py SRC FUNC -e edits.py` before it is offered; say which were compiled.
-  Renames and comments need no test.
+- **Code changes compile first.** Every code change (removed local, define, reordered statement)
+  is tested in `variant.py SRC FUNC -e edits.py` before it is applied or offered. Renames and
+  comments need no test.
 - **Report as "I edited" vs "for you to apply"**, against the user's current code. List only what
   changed or what is still proposed; no side remarks about notes or memory.
 - **Delivery:** small changes as an in-chat diff or a short before/after; a whole function in a
@@ -57,7 +67,7 @@ Tools live in `~/dev/ffx-analysis/scripts/` (index: `~/dev/DecompNotes/FFX/Tools
 - **Optional items:** when a proposal mixes required and optional items, ask "all, including N?"
   so a "go ahead" is unambiguous.
 
-## Procedure
+## Per-function procedure
 
 1. **Read the counterparts.** Switch: `swfunc.py FUNC` (alpha strings print first); no row is not
    "no name": check `swrun.py FUNC`, neighbours in `builds/switch/out/functions.tsv`, and the
@@ -82,7 +92,7 @@ Tools live in `~/dev/ffx-analysis/scripts/` (index: `~/dev/DecompNotes/FFX/Tools
 Report which locals or shapes the match required (in chat, not as comments), which names are
 guesses, and the rename line when a name exists.
 
-## Checklist (quick pass)
+## Per-function checklist
 
 - [ ] Switch counterpart read; function renamed or `// Name?` lead added
 - [ ] m2c externs moved; prototypes per evidence (local vs header)
@@ -94,3 +104,34 @@ guesses, and the rename line when a name exists.
 - [ ] guard clauses where they match; no goto
 - [ ] comments only for meaning the code can't show; edge values checked
 - [ ] build OK; `make overlaps` if globals/fields changed
+
+## Per-file pass
+
+Run once the TU is fully matched. Survey first, then send one proposal listing every item with its
+evidence; apply the agreed list, full build after each step, `make overlaps` at the end.
+
+1. **Data ownership:** move the TU's `.data`/`.rodata`/`.bss` into the C file (definitions,
+   string literals inline, `INCLUDE_RODATA` gone, yaml segment changes, pads the TU's own data now
+   provides). String externs and their `// "contents"` comments go here. splat traps: memory
+   `splat-c-file-gotchas`, `FFX/Troubleshooting.md`.
+2. **Linkage:** `static` for functions and data nothing outside the TU uses (`symuse.py NAME` +
+   `grep -rlE "(jal|j) +NAME\b" asm/jp_intl`, including `.word` code references); drop prototypes
+   that definition order makes unneeded.
+3. **Headers:** each prototype to its final home (other TUs call it → area header; TU-only → out
+   of headers; `extern.h` holding entries moved out); drop unused `#include`s.
+4. **One vocabulary across the TU:** unify terms and plural/singular; `const` locals repeated in
+   several functions become one file define; struct definitions to the area header when other TUs
+   use them, else kept in the file.
+5. **Extern block:** sorted by section, then address, no duplicates (per-function cleanup leaves
+   the existing order alone).
+
+## Per-file checklist
+
+- [ ] no `INCLUDE_ASM` left in the TU
+- [ ] proposal sent and agreed
+- [ ] data/rodata/bss in C, literals inline, yaml updated
+- [ ] `static` where TU-only; unneeded prototypes gone
+- [ ] prototypes in final headers; unused includes gone
+- [ ] one vocabulary; shared consts → file defines; structs placed
+- [ ] extern block sorted, no duplicates
+- [ ] build OK; `make overlaps`
