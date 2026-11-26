@@ -12,6 +12,8 @@ Shared knowledge for the coding agents (Claude Code, Codex) working on my decomp
 Skills: `ffx-matching` (FFX matching: working agreement, procedure, ee-gcc lessons by symptom),
 `ffx-cleanup` (FFX cleanup of matched code: checklist, apply-vs-propose, names, comments, constants,
 declarations).
+`emulator-debug` (runtime checks: when to test, recipes and what they prove, autonomy, reporting;
+per-emulator files for PCSX2-MCP and PCSX-Redux).
 
 ## How agents load it
 
