@@ -41,6 +41,8 @@
   load `lbu` either way, and `volatile s8` still compiled to `lbu`, so `lbu` alone is not evidence.
   A `(u8)` cast on a test against 0 is folded away; the pointer's own type must be unsigned.
 - **Enum compares are unsigned**; `s32` gives the signed `slti` form.
+- **A `u16`/`u8` parameter that is only stored to a narrow field adds an `andi`** before the store;
+  declare it `s32` even when Switch says 2 bytes (AtelSetEventElemCharIDFromID: `u16` cost one word).
 - **`lbu` + `dsrl` of a flag byte = a 1-bit `u32` bitfield** (func_00158FC8); u8/u64 bitfields don't
   give it.
 - **A float constant stored via an integer register** (`lui 0x3F80; sw`) = an integer field holding the

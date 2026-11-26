@@ -9,6 +9,10 @@
   differently than the target, vary the number and position of `return`s before anything else;
   `rtl.py --diff` shows it from the first pass.
 - **Early return:** the early branch lands straight on the epilogue with v0 already set.
+- **0/1 result via `movn` = an `if` assignment, not `!= 0`.** `daddu v0, $0, $0; movn v0, rONE, rX`
+  comes from if-converting `result = 0; if (x) result = 1;` (or `if (x) r = 1; else r = 0;`);
+  `x != 0`, `x ? 1 : 0`, `!!x` all give `sltu`, with any return width (AtelGetEventElemStatus).
+  The constant 1 may sit in a saved register loaded before the first call when `1 << n` shares it.
 - **v0 not set on some path = missing or bare `return;`.** A path reaching the epilogue with no
   `move v0` (often `ld ra` in the branch slot), or a call that isn't a tail jump where `return f()`
   would make one, falls off the end and returns the last call's result (func_00163290,
