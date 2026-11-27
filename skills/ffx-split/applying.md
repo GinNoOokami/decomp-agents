@@ -12,6 +12,10 @@ segment(s) and restarts asm after them:
     - [0x0C05E8, asm, 1C05E8]
 ```
 
+`.rodata` end with no skip (the last item runs straight into the next at an aligned address):
+end = the first item whose user lies past the file's `.text` end (1CCAF8: 0x56E580, 0x1CFA08's
+jump table).
+
 Give the file its `.rodata` when the block's edges are known (needed when its functions own jump
 tables: an asm `.rodata` file can't resolve the `.L` labels of a function that moved into a C
 object):
@@ -76,6 +80,7 @@ Expect `SLPS_250.88.bin: OK`. Then check in `build/jp_intl/SLPS_250.88.map` that
   | 6 | Call direction     |                                  |
   | 7 | Other builds       |                                  |
   | 8 | Per-object .data   |                                  |
+  | — | notescheck rerun on addresses this report adds |       |
   yaml: …   scratch build: OK / …   folder: … (callers elsewhere?)
   ```
 - After applying: full build in the tree, `git status` shows the yaml + new C files; the user

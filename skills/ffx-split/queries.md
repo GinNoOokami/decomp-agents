@@ -32,8 +32,10 @@ for r in db.execute(q):
     print(*r, sep="\t")      # callee, call sites, distinct callers
 ```
 
-Then group the callees into blocks (SKILL.md "Rank candidate blocks") and add calls from matched C
-(callers not in `nonmatchings/`).
+Then group the callees into blocks (SKILL.md "Rank candidate blocks") with the neighbourhood table
+below, and add calls from matched C: a call written in C text is matched code (`INCLUDE_ASM` has no
+call text), so `grep -rn 'func_001CCA48\|MsStructClear' ~/dev/ffx/src` (old and current name;
+matched callees get renamed).
 
 Callee prototypes live in the area headers (`include/game/battle.h`, `chr.h`, `atel.h`) as well as
 `include/extern.h`; a declared callee with many call sites is the strongest target.
@@ -41,10 +43,12 @@ Callee prototypes live in the area headers (`include/game/battle.h`, `chr.h`, `a
 ## Edge signals
 
 ```sh
-# per function in a range: .rodata and .bss targets
+# neighbourhood table: per function, size, distinct callers, .rodata / .bss / .data targets
 sqlite3 -tabs $DB "select printf('%X',f.addr), f.name, f.size,
+ (select count(distinct r.func) from refs r where r.target=f.addr and r.kind in ('call','jump')),
  (select group_concat(distinct printf('%X',r.target)) from refs r where r.func=f.addr and r.tsec like '%rodata%'),
- (select group_concat(distinct printf('%X',r.target)) from refs r where r.func=f.addr and r.tsec like '%bss%')
+ (select group_concat(distinct printf('%X',r.target)) from refs r where r.func=f.addr and r.tsec like '%bss%'),
+ (select group_concat(distinct printf('%X',r.target)) from refs r where r.func=f.addr and r.tsec = '.data')
  from functions f where f.addr between 0x1B8000 and 0x1C0800 order by f.addr"
 # .rodata / .bss items in a window, and their users
 sqlite3 -tabs $DB "select printf('%X',addr), directive, substr(value,1,40) from dataitems where addr between 0x56DF80 and 0x56E1A0 order by addr"

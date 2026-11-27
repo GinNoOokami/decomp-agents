@@ -32,9 +32,11 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
   `.rodata` skips. Report per block: call sites, distinct callers, calls from matched C (sites alone
   are skewed by init/free fan-out: 0x1AD180/0x1ADB40/0x1ADE50 call one init/free per subsystem).
   Prefer a block whose edges our own signals can place; drop early a block whose window is all
-  data-less functions. If no block has an own-signal edge, stop and report the ranking before deep
-  edge work (1DBA28: three candidates, three different winners by measure; ~15 calls went on
-  exploring the two that lost).
+  data-less functions. Post the ranking table as a progress update, then continue; stop and
+  report only if no block has an own-signal edge (1DBA28: three candidates, three different
+  winners by measure; ~15 calls went on exploring the two that lost). If the top callee sits in a
+  block with no own-signal edge, say so up front, split the best-evidenced neighbouring block, and
+  name the top callee's file as the follow-up (its edge is then bounded by the new split).
 - **Pilot first, report the yield.** One region, cheapest checks, then decide whether more is worth
   it. No new framework for what a sqlite query or grep does.
 - **Edges are leads until matched C confirms the file**; reference projects corroborate, never
@@ -42,16 +44,18 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
 
 ## Procedure
 
-1. **Notes first:** as soon as candidate addresses or names exist, before ranking queries, edge
-   work or other tools, run `python3 scripts/notescheck.py` on them (SystemSplit.md may already
-   describe a block). Quote what the notes have and keep "already noted" apart from "new". Run it
-   again on every address or name the final report adds. Its "inside a range" lines repeat for
-   every address: keep the direct hits (`| head`, or one address at a time).
+1. **Notes first:** right after the Target query, run `python3 scripts/notescheck.py` on its top
+   callees, before grouping, ranking or any edge work (SystemSplit.md may already describe a
+   block). Quote what the notes have and keep "already noted" apart from "new". Run it again on
+   every address or name the final report adds (the proposal template has a row for it). Direct
+   hits only, per address: `notescheck.py ADDR | awk '/inside a range/{exit} {print}'`.
 2. **Reference projects** (leads):
    - khasinski `tu_map.tsv` (PAL addresses, exclusive ends; conversion and grep recipe in
      `queries.md`). Note its confidence column; its edges are statistical.
    - Rozelette's yaml/src (`ref/rozelette-ffx/SLPS_250.88.yaml`), Sony sources in `ref/globe`.
-3. **Switch order:** `swrun.py FUNC --anchor SwitchName -n 12` around each candidate edge; Switch
+3. **Switch order:** first loop `swfunc.py ADDR` over the candidate edge addresses (one line each:
+   Switch name, alpha strings); then `swrun.py FUNC --anchor SwitchName -n 12` only with FUNC's
+   own Switch name as the anchor (a neighbour's name aligns the wrong pair, 1CCAF8). Switch
    name runs in `builds/switch/out/functions.tsv` (grep a prefix). When `swfill.py` has no anchors
    ("nothing to fill"), anchor `swrun` on a `// Switch X?` lead from the area header (1DBA28:
    `--anchor MsMenuReadText`; swfill's far rows there were wrong). Order shows which functions sit
@@ -81,26 +85,17 @@ calibration) are in FileBoundaries.md "Signals and how far they hold".
 
 | # | Check | How | Reads as |
 |---|---|---|---|
-| 1 | Saved signals | `combine.py cuts LO HI`, `combine.py files LO HI`; `dataorder.py gaps LO HI` | exact cut / joined run; discount one-pair `.data` joins into big shared blocks (`btl`, `EventSave` fields) |
+| 1 | Saved signals | `combine.py cuts LO HI`, `combine.py files LO HI`; `dataorder.py gaps LO HI` | exact cut / joined run; discount one-pair `.data` joins into big shared blocks (`btl`, `EventSave` fields). `combine.py` has no static-`.bss` input: its joined runs can be shorter than check 3's (1CCAF8) |
 | 2 | `.rodata` alignment | `.rodata` items + users (query below) at each block start | a string at a 16-aligned address that skips a free 8-aligned slot after the previous item = new object. Jump tables are `.align 4` (16) inside one object too: padding after a table is no signal. No signal either when the next free 8-aligned slot is itself 16-aligned. No skip ≠ join: an object of only strings/doubles is 8-aligned, so contiguity at 8 says nothing (0x56F3E8→0x56F3F8) |
 | 3 | Static `.bss` | users of each `.bss` item near the edge (query below) | in the low block 0x57C780–0x6A2C90, two functions using one item = same file (ee-gcc puts only uninitialized statics there; `= 0` goes to `.data`, plain globals to COMMON). Also: where the previous/next file's items' users stop. One file's low `.bss` right before the next split file's only means the files between have no statics, not that the two files are adjacent |
 | 4 | Shared literals | same `.rodata` address used by two functions | same file (gcc 2.9 merges identical literals per TU only); two copies of one string = different files |
 | 5 | Date getters | AlphaBuild.md list | which side of the edge, by the alignment test |
 | 6 | Call direction | `calldir.py gaps LO HI`; callers per function (`symuse.py FUNC`) | leads only; callers only inside the file suggests `static` |
-| 7 | Other builds | `xmap.py lookup ADDR` at both sides | a function missing in an older build, or alpha-only code International dropped, often sits at a file end; a delta step inside a run is an insertion, not an edge |
+| 7 | Other builds | `xmap.py lookup ADDR` at both sides | a function missing in an older build, or alpha-only code International dropped, often sits at a file end; a delta step inside a run is an insertion, not an edge. `swfunc.py`'s "Alpha (boundary X\|Y)" line is an alpha file-edge hint: weak, and static `.bss` crossing it overrides it (0x1CEC20\|0x1CECE0, 1CCAF8) |
 | 8 | Per-object `.data` blocks | `.data` users per block (`symuse.py ADDR --size --range`) | gcc emits one `.data` block per object: far-apart blocks used by neighbouring functions = separate files (TK layer, 2026-11-10); high `.bss` blocks with no outside users are weak alone |
 
 Queries for checks 2–4: `queries.md` "Edge signals".
 
-## Lessons (with the split that taught them)
+## Lessons
 
-- **Static `.bss` beats reference edges** (1B8920, 2026-11-26): `D_00662080` used by 0x1B8C30 and
-  0x1BBCC0 rejected two khasinski edges inside that span.
-- **`.rodata` skip gives a window, not a point** (1B8920): the skip only says the new file's first
-  `.rodata` user is after the old file's last; functions in between with no data can go either
-  way. Choose by goal and say so.
-- **No pad by default** (1B8920/1BC308): an INCLUDE_ASM jump table's `.s` carries its trailing zero
-  words, so the C object's `.rodata` already ends 16-aligned. Build without a `pad` first; add one
-  only when the build shifts (the 1AF4E8 case: matching the last function drops that padding).
-- **Read the checklist before the pilot**, not after (1B8920: four checks were run only after the
-  proposal; none changed it, but the order matters when one does).
+Past splits' lessons, each with the split that taught it: `lessons.md`. Add new ones there.
