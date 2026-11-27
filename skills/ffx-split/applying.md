@@ -25,6 +25,10 @@ object):
 
 - Names: address-named files in our own folders (`game/battle/`, `game/atel/`, `common/`, `lib/`);
   each segment name distinct.
+- Folder: by default the SystemSplit.md block the address is in (link order), not who calls it.
+  When callers point elsewhere (1DBA28: getters called mostly from menu code at 0x22/0x24xxxx),
+  say so in the proposal and let the user choose. While every function is still `INCLUDE_ASM`, a
+  folder change costs only the yaml plus `git mv`.
 - `pad` (`- [0x46DDD8, pad, 56DDD8] # the .rodata after it starts 16-aligned; subalign 8 can't
   express that`) only when the build shows a shift; test without first.
 - `.data`/`.bss` dot-subsegments hand the range to C, which must then define every variable (exact
@@ -58,7 +62,22 @@ Expect `SLPS_250.88.bin: OK`. Then check in `build/jp_intl/SLPS_250.88.map` that
 ## Proposal and after
 
 - Show the yaml lines and what `make` generates (counts of `INCLUDE_ASM`/`INCLUDE_RODATA`), the
-  build result, and the edge evidence with its strength.
+  build result, and the edge evidence with its strength, in this shape:
+
+  ```
+  Target: <block> — why (ranking: sites / callers / matched-C per candidate)
+  Edges:  start <addr> (window <lo>..<hi>, decided by …), end <addr> (…)
+  | # | Check              | Result                           |
+  | 1 | Saved signals      | ran: … / no signal / skipped (why) |
+  | 2 | .rodata alignment  |                                  |
+  | 3 | Static .bss        |                                  |
+  | 4 | Shared literals    |                                  |
+  | 5 | Date getters       |                                  |
+  | 6 | Call direction     |                                  |
+  | 7 | Other builds       |                                  |
+  | 8 | Per-object .data   |                                  |
+  yaml: …   scratch build: OK / …   folder: … (callers elsewhere?)
+  ```
 - After applying: full build in the tree, `git status` shows the yaml + new C files; the user
   commits.
 - Then: move prototypes for the file's functions from `extern.h` to the area header when they get

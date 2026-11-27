@@ -25,9 +25,16 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
   untested yaml.
 - **The target comes from the goal**, not from the cleanest edge: files holding functions matched C
   already calls (prototypes in `include/extern.h` and the area headers such as `game/battle.h`),
-  or tables/functions the user wants in C. Rank candidates by call sites from the split files'
-  asm (`queries.md` "Target"), not by prototype counts alone. Start from that cluster; widen only
-  as far as the evidence forces.
+  or tables/functions the user wants in C. Start from that cluster; widen only as far as the
+  evidence forces.
+- **Rank candidate blocks, not single callees.** Group the targets (`queries.md` "Target", from the
+  split files' asm, not prototype counts) into blocks: a static-`.bss` chain, or a run between
+  `.rodata` skips. Report per block: call sites, distinct callers, calls from matched C (sites alone
+  are skewed by init/free fan-out: 0x1AD180/0x1ADB40/0x1ADE50 call one init/free per subsystem).
+  Prefer a block whose edges our own signals can place; drop early a block whose window is all
+  data-less functions. If no block has an own-signal edge, stop and report the ranking before deep
+  edge work (1DBA28: three candidates, three different winners by measure; ~15 calls went on
+  exploring the two that lost).
 - **Pilot first, report the yield.** One region, cheapest checks, then decide whether more is worth
   it. No new framework for what a sqlite query or grep does.
 - **Edges are leads until matched C confirms the file**; reference projects corroborate, never
@@ -35,7 +42,8 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
 
 ## Procedure
 
-1. **Notes:** `notescheck.py` on every address and name involved; quote what the notes have and
+1. **Notes:** `notescheck.py` on the candidate blocks while ranking (SystemSplit.md may already
+   describe one), then on every address and name involved; quote what the notes have and
    keep "already noted" apart from "new" in the report. Its "inside a range" lines repeat for
    every address: keep the direct hits (`| head`, or one address at a time).
 2. **Reference projects** (leads):
@@ -43,7 +51,9 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
      `queries.md`). Note its confidence column; its edges are statistical.
    - Rozelette's yaml/src (`ref/rozelette-ffx/SLPS_250.88.yaml`), Sony sources in `ref/globe`.
 3. **Switch order:** `swrun.py FUNC --anchor SwitchName -n 12` around each candidate edge; Switch
-   name runs in `builds/switch/out/functions.tsv` (grep a prefix). Order shows which functions sit
+   name runs in `builds/switch/out/functions.tsv` (grep a prefix). When `swfill.py` has no anchors
+   ("nothing to fill"), anchor `swrun` on a `// Switch X?` lead from the area header (1DBA28:
+   `--anchor MsMenuReadText`; swfill's far rows there were wrong). Order shows which functions sit
    together; it can't place an edge (the port moves blocks, e.g. the `MsBtlRead*` block sits
    between `MsGetDamage*` and `MsGetRom*` on Switch). `swfill.py` far from its anchors (`edgeN`
    with big N) is unreliable. Rows drift where PS2 and Switch order a pair differently (1B3FC8:
@@ -71,7 +81,7 @@ calibration) are in FileBoundaries.md "Signals and how far they hold".
 | # | Check | How | Reads as |
 |---|---|---|---|
 | 1 | Saved signals | `combine.py cuts LO HI`, `combine.py files LO HI`; `dataorder.py gaps LO HI` | exact cut / joined run; discount one-pair `.data` joins into big shared blocks (`btl`, `EventSave` fields) |
-| 2 | `.rodata` alignment | `.rodata` items + users (query below) at each block start | a string at a 16-aligned address that skips a free 8-aligned slot after the previous item = new object. Jump tables are `.align 4` (16) inside one object too: padding after a table is no signal. No signal either when the next free 8-aligned slot is itself 16-aligned |
+| 2 | `.rodata` alignment | `.rodata` items + users (query below) at each block start | a string at a 16-aligned address that skips a free 8-aligned slot after the previous item = new object. Jump tables are `.align 4` (16) inside one object too: padding after a table is no signal. No signal either when the next free 8-aligned slot is itself 16-aligned. No skip ≠ join: an object of only strings/doubles is 8-aligned, so contiguity at 8 says nothing (0x56F3E8→0x56F3F8) |
 | 3 | Static `.bss` | users of each `.bss` item near the edge (query below) | in the low block 0x57C780–0x6A2C90, two functions using one item = same file (ee-gcc puts only uninitialized statics there; `= 0` goes to `.data`, plain globals to COMMON). Also: where the previous/next file's items' users stop. One file's low `.bss` right before the next split file's only means the files between have no statics, not that the two files are adjacent |
 | 4 | Shared literals | same `.rodata` address used by two functions | same file (gcc 2.9 merges identical literals per TU only); two copies of one string = different files |
 | 5 | Date getters | AlphaBuild.md list | which side of the edge, by the alignment test |

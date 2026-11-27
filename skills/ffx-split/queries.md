@@ -8,15 +8,32 @@ yaml offsets are vram − 0x100000. Unsplit = the yaml's `asm` segments.
 Calls from a file's range into unsplit code, from the asm (`refs`), not the C: a fresh file's
 functions are mostly `INCLUDE_ASM`, so grepping the C misses their calls (1B8920: 35 callers of
 `func_001B4150`, almost none visible in C). Matched C's calls are a subset. `kind` `call` = `jal`,
-`jump` = tail call `j`. Fill the target ranges from the yaml's asm segments:
+`jump` = tail call `j`. The ranges come from the current yaml (the layout db's `segments` table
+has only top-level sections and predates recent splits). Set the system range and C-file prefix,
+run from `~/dev/ffx-analysis`:
 
-```sh
-sqlite3 -tabs $DB "select printf('%X',target), count(*), count(distinct func),
- group_concat(distinct printf('%X',func)) from refs
- where func >= 0x1B8920 and func < 0x1BC308 and kind in ('call','jump')
-   and ((target >= 0x1B34F8 and target < 0x1B8920) or (target >= 0x1C05E8 and target < 0x1F0000))
- group by target order by 3 desc limit 20"
+```python
+import re, sqlite3, subprocess
+LO, HI, PREFIX = 0x1AC068, 0x1EF7D8, "game/battle/"   # system range; C files counted as callers
+segs = []
+for l in open("/home/jeff/dev/ffx/config/jp_intl/SLPS_250.88.yaml"):
+    m = re.match(r"\s*- \[(0x[0-9A-Fa-f]+), (c|asm|hasm|data|\.?rodata|\.?data|pad|bin)\b,? ?([^\]]*)\]", l)
+    if m and int(m[1], 16) < 0x200000:                  # .text segments
+        segs.append((int(m[1], 16) + 0x100000, m[2], m[3].strip()))
+segs.sort()
+rng = [(a, segs[i + 1][0], k, n) for i, (a, k, n) in enumerate(segs[:-1])]
+inside = lambda col, kinds: " or ".join(f"({col} >= {max(a, LO)} and {col} < {min(b, HI)})"
+                                       for a, b, k, n in rng if k in kinds and a < HI and b > LO
+                                       and (k != "c" or n.startswith(PREFIX)))
+db = sqlite3.connect(subprocess.check_output(["python3", "scripts/layout.py", "db"], text=True).strip())
+q = (f"select printf('%X',target), count(*), count(distinct func) from refs where kind in ('call','jump') "
+     f"and ({inside('func', {'c'})}) and ({inside('target', {'asm'})}) group by target order by 3 desc, 2 desc limit 20")
+for r in db.execute(q):
+    print(*r, sep="\t")      # callee, call sites, distinct callers
 ```
+
+Then group the callees into blocks (SKILL.md "Rank candidate blocks") and add calls from matched C
+(callers not in `nonmatchings/`).
 
 Callee prototypes live in the area headers (`include/game/battle.h`, `chr.h`, `atel.h`) as well as
 `include/extern.h`; a declared callee with many call sites is the strongest target.
