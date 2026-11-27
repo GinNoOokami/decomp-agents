@@ -64,8 +64,9 @@
 - **After a rename, also compile with `-DNON_MATCHING`:** `#ifndef NON_MATCHING` blocks hold C the
   normal build never sees (a compiler-guided rename missed 103 field accesses in func_00163950 /
   func_00255158).
-- **Strict aliasing is a per-file question** (Toolchain.md "Options: strict aliasing"): `C_FLAGS`
-  has `-fno-strict-aliasing` because the libs need it; the compiler's own `-O2` default is on. Symptom
+- **Strict aliasing differs by folder** (Toolchain.md "Options: strict aliasing"): game code
+  builds with the compiler's default (on), `src/lib` with `-fno-strict-aliasing`
+  (`NO_STRICT_ALIASING_DIRS`); the tools read both from the Makefile (`ffxfunc.opt_flags_for`). Symptom
   of a file that needs it on: fields re-read after a store through an unrelated pointer type, where the
   target reads them once (and gcse then shares sums across the store's join that the target doesn't).
   func_001B8920 (2026-11-27): a plain `for` loop matched with `-fstrict-aliasing` after ~30 shape

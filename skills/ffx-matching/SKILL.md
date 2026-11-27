@@ -5,7 +5,7 @@ description: Matching FFX (PS2) functions byte-for-byte in ~/dev/ffx with ee-gcc
 
 # FFX matching
 
-Toolchain: ee-gcc 2.9-991111 (gcc 2.95.2 based, haifa scheduler), `-O2 -G0 -fno-strict-aliasing`;
+Toolchain: ee-gcc 2.9-991111 (gcc 2.95.2 based, haifa scheduler), `-O2 -G0` (strict aliasing on; `src/lib` adds `-fno-strict-aliasing`, Makefile `NO_STRICT_ALIASING_DIRS`);
 two assemblers chosen per source folder (Makefile `DTLS_DIRS`: dtls13010 for those, 991111-01 for the
 rest). gcc pass sources:
 `~/dev/ffx-analysis/gcc/gcc-2.95.2-ps2linux-3a/gcc/`. Tool locations: `~/dev/DecompNotes/FFX/Tools.md`.
