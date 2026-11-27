@@ -65,6 +65,9 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    INCLUDE_ASM functions, so it vanishes on the next re-split (yaml or symbol_addrs change,
    `make distclean`). Before applying a scratch result, `cmp` the tree file against the copy's base;
    if the user edited it meanwhile, re-apply onto their current file.
+   **Flags are per file, never assumed** (Toolchain.md lists what each file is known to use). Run
+   the flag check below before any shape-hunting when (a) the function is the first in its file to
+   be matched, or (b) a simple function stays off after two or three natural variants.
 2. **Gather counterparts before guessing:** Switch (`swfunc.py FUNC`; with a stale or missing row, the
    full list in `builds/switch/out/functions.tsv` + `swfunc.py --sw`, never `swx2/shared.tsv`), PC
    (`builds/pc/out/`), the ref
@@ -92,6 +95,17 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    match is in the tree (not for one that exists only in scratch): offer `tidy_externs.py`; rename
    only matched functions, with the user picking the name; log the harder/easier/same rating
    against a recent non-twin match in `~/dev/ffx-analysis/data/nextfunc_ratings.tsv`.
+
+## Flag check
+
+Compile the current best version under each option that differs between files in this project:
+strict aliasing on (game default) and off (`src/lib`), both assemblers (`variant.py --asm dtls` /
+`--asm 01`), `-G0` and `-G8` (Toolchain.md "`-G` per file"). A natural version that matches only
+under a non-default setting is a per-file finding: check the file's other matched functions and the
+whole repo both ways, record it in Toolchain.md, then change the Makefile's per-folder lists.
+Options no file uses yet (`-fno-gcse`, `-fno-schedule-insns`...) are diagnostics: they show which
+pass differs, and a match that needs one is a lever until other files give the same evidence
+(func_001B8920: a `-fno-gcse` match with extra locals hid the real cause, strict aliasing).
 
 ## Symptom index
 

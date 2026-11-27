@@ -23,7 +23,8 @@ at, or is named in the report as skipped:
 - gcc source and RTL traces, each turned into concrete source shapes and tested
   (Sg_ScreenshotWrite: a trace and a permuter hint were never turned into the obvious test).
 - The stuck statement's natural positions and the declarations of globals involved.
-- Compiler flags, as a whole-build hypothesis, when a trace points at an option-controlled pass.
+- Compiler flags per file (SKILL.md "Flag check"): run early, not here; listed so parking never
+  skips it.
 - Permuter hints, last.
 
 ## Tried tables

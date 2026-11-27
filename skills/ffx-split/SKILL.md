@@ -77,7 +77,10 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
    and which only on a reference project.
 6. **Build in scratch, propose, apply** (`applying.md`). The proposal shows the checklist with
    each check marked ran / no signal / skipped.
-7. **Record** the evidence in FileBoundaries.md (a short section per split: a 1–2 line contents
+7. **Flags:** a new file inherits its folder's flags (Makefile `DTLS_DIRS`,
+   `NO_STRICT_ALIASING_DIRS`), which are assumptions until its first matched function passes the
+   `ffx-matching` flag check; say so in the proposal.
+8. **Record** the evidence in FileBoundaries.md (a short section per split: a 1–2 line contents
    summary, window, signals, rejected reference edges, open ends; commit + push), and report progress with
    `python3 scripts/layout.py count LO HI` (functions, bytes, in C files, matched, matched %).
 
