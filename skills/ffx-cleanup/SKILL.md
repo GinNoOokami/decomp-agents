@@ -59,6 +59,9 @@ Per-file cleanup is large and rare, so reworking an applied change costs more th
   reporting a name, meaning, Switch pairing or other finding. Say what's already noted and what's new.
 - **Never touch the user's in-progress function** beyond what they asked for, and never undo their
   edits or style (decimal vs hex, their comments; see comments.md).
+- **Layout is clang-format's job** (`.clang-format`, `make format`): no reformatting in cleanup
+  (line breaks, one-line bodies, spacing). LLVM style keeps short functions on one line
+  (MsGetMon, 2026-11-27: a one-line body expanded to three lines, user: not a cleanup role).
 - **Every edit is checked:** a full build (`make`, filter `grep -v 'repeat count is zero'`, expect
   `OK`) before reporting; never while the user builds (`pgrep -a make`). Comment-only edits need no
   build. Back up a file to scratch before editing it.
