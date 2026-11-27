@@ -15,7 +15,11 @@ here every change is compiled with `variant.py -e` before it's offered, and the 
   `fieldId` beside `entryId` documents how a packed id splits). A local that only exists to shorten
   a line clang-format would wrap is fine when it matches.
 - **Initialize at the declaration** (`u8 oldWeight = 0;`), not m2c's split `u8 x;` + `x = 0;`,
-  whenever the match allows.
+  whenever the match allows. One failed compile doesn't settle it: the initializers run in
+  declaration order, so put the declarations in the order of the split assignments (and of any
+  other first uses), or run `vsweep.py SRC FUNC decls` on the initialized version. MsGetChrID: kept
+  as split assignments after one try; the user matched `chrId, modelId, result = 0` then
+  `code`, `index`, `type` initialized, with little effort.
 - **Scope:** block-scoped locals where the value lives in a block are fine
   (`s32 roll = brnd(1) % …` inside the hit branch).
 
