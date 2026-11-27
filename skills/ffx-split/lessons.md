@@ -21,3 +21,10 @@ keeps the cases.
 - **Top callee outside the split** (1CCAF8): `func_001CCA48` (24 callers) sits before the chosen
   start window, in a file with no start edge; the effect block next to it was split and the
   `MsStructClear?` file named as the follow-up.
+- **swfill/swfunc rows off by one past a short run** (1E0D98): swfunc labelled `func_001E0EB8` (no
+  callers, chr-record setter) as `MsMemCheckFree`; the real `Free` is 0x1E0E80 (caller
+  `MsBattleAllFree`, callee `Mem_Free`). Settle the last row of a run by callers/callees.
+- **An isolated Switch run can carry both edges when no own signal does** (1E0D98): the four
+  `MsMemCheck*` functions sit between unrelated blocks on Switch (`MsBtlList*`, port-only text
+  functions) and their sizes track PS2's; with a static-`.bss` core and both windows data-less, the
+  chosen file = the run, edges labelled as resting on no own signal.
