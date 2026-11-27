@@ -26,6 +26,12 @@
   types decide the rest when codegen is neutral (`u8 MsGetBattleEncount` from Switch `byte`, where
   `u8`/`u32`/`s32` all matched). Parameter order follows Switch when codegen can't tell (floats and
   ints use separate registers on the EE: `MsBattleEncountExe(f32 dist, s32 fieldId, s32 groupIndex)`).
+- **A global's type change can't be checked while its other users are `INCLUDE_ASM`.** The build only
+  covers the matched function. Never retype to `void*`: a `void*` call result stored into a
+  `void*` global changed the store order in the next function (`D_00662AE4`, 2026-11-26: `s32` →
+  `void*` in MsMemCheckInit's cleanup broke MsMemCheckSum; `u8*` matched; same cause as
+  ffx-matching types-and-shapes.md, func_00159EA8). Use a typed pointer, or keep m2c's type and
+  leave a lead comment until the other users are matched.
 - **Header prototypes hold only what is used;** constants are the exception (below).
 
 ## Constants
