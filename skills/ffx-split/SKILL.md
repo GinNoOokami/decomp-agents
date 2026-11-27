@@ -10,7 +10,8 @@ the evidence allows, its own `.rodata`. Edges are hypotheses: the yaml makes the
 while the functions are still asm, and matched C at a wrong edge has to move files. So say how
 strong each edge is, and prefer edges that serve the goal over edges that are merely clean.
 
-Reference files: `queries.md` (target query, edge-signal queries, khasinski conversion),
+Main tool: `scripts/splitscan.py` (`targets`, `funcs`, `skips`, `bss`, `khasinski`; see `queries.md`).
+Reference files: `queries.md` (what each subcommand answers, extra queries),
 `applying.md` (yaml patterns, splat behaviour, scratch build, after the split).
 Tools: `~/dev/ffx-analysis/scripts/` (index `~/dev/DecompNotes/FFX/Tools.md`); run them as
 `python3 scripts/X.py` (they aren't executable). Edge facts and
@@ -27,13 +28,16 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
   already calls (prototypes in `include/extern.h` and the area headers such as `game/battle.h`),
   or tables/functions the user wants in C. Start from that cluster; widen only as far as the
   evidence forces.
-- **Rank candidate blocks, not single callees.** Group the targets (`queries.md` "Target", from the
+- **Rank candidate blocks, not single callees.** Group the targets (`splitscan.py targets`, from the
   split files' asm, not prototype counts) into blocks: a static-`.bss` chain, or a run between
-  `.rodata` skips. Report per block: call sites, distinct callers, calls from matched C (sites alone
-  are skewed by init/free fan-out: 0x1AD180/0x1ADB40/0x1ADE50 call one init/free per subsystem).
-  Prefer a block whose edges our own signals can place; drop early a block whose window is all
-  data-less functions. Post the ranking table as a progress update, then continue; stop and
-  report only if no block has an own-signal edge (1DBA28: three candidates, three different
+  `.rodata` skips. Rank by distinct matched-C callers, then distinct callers, then call sites, and
+  say which measure decided. Init/free hubs (`MsBattleMemInit`, `MsBattleAllFree`, `MsBattleFree`,
+  0x1AD180, 0x1ADE50; the tool stars them) call one init/free per subsystem: a block whose only
+  matched-C callers are hubs is weakly goal-backed. Prefer a block whose edges our own signals can
+  place; drop early a block whose window is all data-less functions. A neighbouring split's chosen
+  point (a point inside a window, not an exact cut) is not an own-signal edge. Before stopping on
+  "no own-signal edge", run the cheap checks 7 and 8 on the top 1–2 blocks so the report has no
+  "not run" rows; then stop and report (1DBA28: three candidates, three different
   winners by measure; ~15 calls went on exploring the two that lost). If the top callee sits in a
   block with no own-signal edge, say so up front, split the best-evidenced neighbouring block, and
   name the top callee's file as the follow-up (its edge is then bounded by the new split).
@@ -44,14 +48,13 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
 
 ## Procedure
 
-1. **Notes first:** right after the Target query, run `python3 scripts/notescheck.py` on its top
-   callees, before grouping, ranking or any edge work (SystemSplit.md may already describe a
-   block). Quote what the notes have and keep "already noted" apart from "new". Run it again on
+1. **Target, notes, ranking:** run `splitscan.py targets LO HI PREFIX`, then `notescheck.py` on
+   its top callees before grouping or any edge work (SystemSplit.md may already describe a block),
+   then post the ranking table as a progress update. Quote what the notes have and keep "already noted" apart from "new". Run it again on
    every address or name the final report adds (the proposal template has a row for it). Direct
    hits only, per address: `notescheck.py ADDR | awk '/inside a range/{exit} {print}'`.
 2. **Reference projects** (leads):
-   - khasinski `tu_map.tsv` (PAL addresses, exclusive ends; conversion and grep recipe in
-     `queries.md`). Note its confidence column; its edges are statistical.
+   - khasinski `tu_map.tsv` (`splitscan.py khasinski ADDR` converts its PAL rows to ours). Note its confidence column; its edges are statistical.
    - Rozelette's yaml/src (`ref/rozelette-ffx/SLPS_250.88.yaml`), Sony sources in `ref/globe`.
 3. **Switch order:** first loop `swfunc.py ADDR` over the candidate edge addresses (one line each:
    Switch name, alpha strings); then `swrun.py FUNC --anchor SwitchName -n 12` only with FUNC's
@@ -86,15 +89,15 @@ calibration) are in FileBoundaries.md "Signals and how far they hold".
 | # | Check | How | Reads as |
 |---|---|---|---|
 | 1 | Saved signals | `combine.py cuts LO HI`, `combine.py files LO HI`; `dataorder.py gaps LO HI` | exact cut / joined run; discount one-pair `.data` joins into big shared blocks (`btl`, `EventSave` fields). `combine.py` has no static-`.bss` input: its joined runs can be shorter than check 3's (1CCAF8) |
-| 2 | `.rodata` alignment | `.rodata` items + users (query below) at each block start | a string at a 16-aligned address that skips a free 8-aligned slot after the previous item = new object. Jump tables are `.align 4` (16) inside one object too: padding after a table is no signal. No signal either when the next free 8-aligned slot is itself 16-aligned. No skip ≠ join: an object of only strings/doubles is 8-aligned, so contiguity at 8 says nothing (0x56F3E8→0x56F3F8) |
-| 3 | Static `.bss` | users of each `.bss` item near the edge (query below) | in the low block 0x57C780–0x6A2C90, two functions using one item = same file (ee-gcc puts only uninitialized statics there; `= 0` goes to `.data`, plain globals to COMMON). Also: where the previous/next file's items' users stop. One file's low `.bss` right before the next split file's only means the files between have no statics, not that the two files are adjacent |
+| 2 | `.rodata` alignment | `splitscan.py skips LO HI` at each block start | a string at a 16-aligned address that skips a free 8-aligned slot after the previous item = new object. Jump tables are `.align 4` (16) inside one object too: padding after a table, and a skip into a table (its own alignment), are no signal (`splitscan.py skips` marks them). No signal either when the next free 8-aligned slot is itself 16-aligned. No skip ≠ join: an object of only strings/doubles is 8-aligned, so contiguity at 8 says nothing (0x56F3E8→0x56F3F8) |
+| 3 | Static `.bss` | `splitscan.py bss LO HI` near the edge | in the low block 0x57C780–0x6A2C90, two functions using one item = same file (ee-gcc puts only uninitialized statics there; `= 0` goes to `.data`, plain globals to COMMON). Also: where the previous/next file's items' users stop. One file's low `.bss` right before the next split file's only means the files between have no statics, not that the two files are adjacent |
 | 4 | Shared literals | same `.rodata` address used by two functions | same file (gcc 2.9 merges identical literals per TU only); two copies of one string = different files |
 | 5 | Date getters | AlphaBuild.md list | which side of the edge, by the alignment test |
 | 6 | Call direction | `calldir.py gaps LO HI`; callers per function (`symuse.py FUNC`) | leads only; callers only inside the file suggests `static` |
 | 7 | Other builds | `xmap.py lookup ADDR` at both sides | a function missing in an older build, or alpha-only code International dropped, often sits at a file end; a delta step inside a run is an insertion, not an edge. `swfunc.py`'s "Alpha (boundary X\|Y)" line is an alpha file-edge hint: weak, and static `.bss` crossing it overrides it (0x1CEC20\|0x1CECE0, 1CCAF8) |
 | 8 | Per-object `.data` blocks | `.data` users per block (`symuse.py ADDR --size --range`) | gcc emits one `.data` block per object: far-apart blocks used by neighbouring functions = separate files (TK layer, 2026-11-10); high `.bss` blocks with no outside users are weak alone |
 
-Queries for checks 2–4: `queries.md` "Edge signals".
+Per-function targets for checks 2–4: `splitscan.py funcs LO HI`.
 
 ## Lessons
 
