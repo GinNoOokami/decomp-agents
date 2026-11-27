@@ -96,6 +96,9 @@ Per-file cleanup is large and rare, so reworking an applied change costs more th
    rule ("higher = rarer" missed that 0 disables).
 8. **After applying:** full build; `make overlaps` when globals or struct fields changed; drop
    comments the new names made redundant; update the handoff's leads if a lead was settled.
+9. **`make format` last** (user, 2026-11-27), then `git status` to confirm it touched only the
+   cleanup's files. Applied cleanups run on a clean tree, so it can't reformat WIP; in proposal
+   mode (user WIP present) don't run it.
 
 Report which locals or shapes the match required (in chat, not as comments), which names are
 guesses, and the rename line when a name exists. For an ambiguous name (several readings fit),
@@ -115,6 +118,7 @@ first candidate plus its reason beats asking (user, 2026-11-26).
 - [ ] guard clauses where they match; no goto
 - [ ] comments only for meaning the code can't show; edge values checked
 - [ ] build OK; `make overlaps` if globals/fields changed
+- [ ] `make format` last; `git status` shows only the cleanup's files
 
 ## Per-file pass
 
@@ -145,4 +149,4 @@ evidence; apply the agreed list, full build after each step, `make overlaps` at 
 - [ ] prototypes in final headers; unused includes gone
 - [ ] one vocabulary; shared consts → file defines; structs placed
 - [ ] extern block sorted, no duplicates
-- [ ] build OK; `make overlaps`
+- [ ] build OK; `make overlaps`; `make format` last
