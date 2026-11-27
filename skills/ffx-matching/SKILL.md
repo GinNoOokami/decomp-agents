@@ -72,9 +72,8 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    full list in `builds/switch/out/functions.tsv` + `swfunc.py --sw`, never `swx2/shared.tsv`), PC
    (`builds/pc/out/`), the ref
    repos (khasinski `tu_map.tsv`, Rozelette, `ref/globe` Sony sources), matched siblings in the TU.
-   **khasinski's matched C for this function**, not just its TU row: `git pull` the clone first (it
-   moves daily), find the function by name in its `config/symbol_addrs.txt` or by the PAL address
-   delta of a named neighbour, read its body and its `config/cflags.txt` entry. A ref body close to
+   **khasinski's matched C for this function**, not just its TU row: `khfunc.py FUNC --pull` (their
+   counterpart, body, when it became C, their flags vs ours). A ref body close to
    ours that matches there while ours doesn't = a build difference (flags, assembler, types), so run
    the flag check before any shape-hunting (func_001B8920: their plain `for` loop was ours; ~30
    variants and a `-fno-gcse` detour before anyone looked). Their types and levers stay leads.
@@ -105,8 +104,9 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
 ## Flag check
 
 Compile the current best version under each option that differs between files in this project:
-strict aliasing on (game default) and off (`src/lib`), both assemblers (`variant.py --asm dtls` /
-`--asm 01`), `-G0` and `-G8` (Toolchain.md "`-G` per file"). A natural version that matches only
+`variant.py SRC FUNC --flags=-fno-strict-aliasing --flags=-fstrict-aliasing --flags=-G8` (strict
+aliasing: game default on, `src/lib` off; `-G` per file: Toolchain.md), then `--asm dtls` / `--asm 01`
+for the assembler. A natural version that matches only
 under a non-default setting is a per-file finding: check the file's other matched functions and the
 whole repo both ways, record it in Toolchain.md, then change the Makefile's per-folder lists.
 Options no file uses yet (`-fno-gcse`, `-fno-schedule-insns`...) are diagnostics: they show which
