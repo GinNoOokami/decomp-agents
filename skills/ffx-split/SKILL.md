@@ -42,9 +42,10 @@ past splits: `~/dev/DecompNotes/FFX/FileBoundaries.md`; system ranges: `FFX/Syst
 
 ## Procedure
 
-1. **Notes:** `notescheck.py` on the candidate blocks while ranking (SystemSplit.md may already
-   describe one), then on every address and name involved; quote what the notes have and
-   keep "already noted" apart from "new" in the report. Its "inside a range" lines repeat for
+1. **Notes first:** as soon as candidate addresses or names exist, before ranking queries, edge
+   work or other tools, run `python3 scripts/notescheck.py` on them (SystemSplit.md may already
+   describe a block). Quote what the notes have and keep "already noted" apart from "new". Run it
+   again on every address or name the final report adds. Its "inside a range" lines repeat for
    every address: keep the direct hits (`| head`, or one address at a time).
 2. **Reference projects** (leads):
    - khasinski `tu_map.tsv` (PAL addresses, exclusive ends; conversion and grep recipe in

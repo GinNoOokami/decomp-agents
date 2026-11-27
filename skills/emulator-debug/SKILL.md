@@ -18,6 +18,9 @@ Per-emulator files:
 
 ## Working agreement
 
+- **Notes first (FFX):** run `python3 ~/dev/ffx-analysis/scripts/notescheck.py` on the address and
+  any names before the static pass, and again before reporting; say what's already noted and
+  what's new. (No equivalent tool for FF7.)
 - **Static pass first.** Before proposing a run: search *all* of the disassembly for the address
   and its struct offset (`0xOFF(` stores, the big unsplit `.s` files too), follow copies and
   pointers, read the counterparts. Write the prediction down ("MsBattleExe clears it, the state

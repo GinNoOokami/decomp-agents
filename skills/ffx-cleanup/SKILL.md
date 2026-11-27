@@ -54,6 +54,9 @@ Per-file cleanup is large and rare, so reworking an applied change costs more th
   - **1 (unstaged changes):** propose everything; the tree is the user's. "Go ahead" / "apply" on
     a proposal is permission for exactly that list; re-read the file first, the user may have
     edited it.
+- **Notes before findings:** when a function, global or field comes up, first run
+  `python3 ~/dev/ffx-analysis/scripts/notescheck.py` on its address and name. Do it again before
+  reporting a name, meaning, Switch pairing or other finding. Say what's already noted and what's new.
 - **Never touch the user's in-progress function** beyond what they asked for, and never undo their
   edits or style (decimal vs hex, their comments; see comments.md).
 - **Every edit is checked:** a full build (`make`, filter `grep -v 'repeat count is zero'`, expect

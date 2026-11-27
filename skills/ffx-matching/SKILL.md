@@ -35,6 +35,9 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
 - **"Did I fix X?" reviews** diff the whole function in scratch and report every other structural
   difference too; never call an m2c artifact (an extra guard, a leftover tail) harmless without
   compiling it.
+- **Notes before findings:** when a function, global or field comes up, first run
+  `python3 ~/dev/ffx-analysis/scripts/notescheck.py` on its address and name. Do it again before
+  reporting a name, meaning, Switch pairing or other finding. Say what's already noted and what's new.
 - **Hands off the user's work.** Never edit the function they are working on; work on scratch copies.
   Exceptions only when asked: parking (stuck.md) and "apply X" (re-read their file first). A full
   match they ask for ("match it for me") is delivered for the user to apply (the function plus any
