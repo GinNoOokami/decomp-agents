@@ -72,6 +72,12 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
    full list in `builds/switch/out/functions.tsv` + `swfunc.py --sw`, never `swx2/shared.tsv`), PC
    (`builds/pc/out/`), the ref
    repos (khasinski `tu_map.tsv`, Rozelette, `ref/globe` Sony sources), matched siblings in the TU.
+   **khasinski's matched C for this function**, not just its TU row: `git pull` the clone first (it
+   moves daily), find the function by name in its `config/symbol_addrs.txt` or by the PAL address
+   delta of a named neighbour, read its body and its `config/cflags.txt` entry. A ref body close to
+   ours that matches there while ours doesn't = a build difference (flags, assembler, types), so run
+   the flag check before any shape-hunting (func_001B8920: their plain `for` loop was ours; ~30
+   variants and a `-fno-gcse` detour before anyone looked). Their types and levers stay leads.
    PC keeps helper boundaries that Switch inlines: an inline's real signature comes from PC. Find a
    PC body through a known PC caller's callees (TkScanControler's counterpart calls 0x889940 twice).
    Always do the Switch lookup (it is also the naming evidence); stop gathering the rest once one
