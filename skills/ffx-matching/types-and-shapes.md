@@ -10,6 +10,12 @@
   mask and kept the terms apart. When a cleanup "needs" odd locals, a split shift or literal masks,
   suspect a missing type property (signedness, pointer vs int) first; cleanup isn't done when every
   removal fails, but when it reads like what the programmer typed.
+- **Layouts may be padded to the hardware on purpose** (user's working hypothesis, 2026-11-26). The
+  original authors align to the EE's 64-byte cache line everywhere (`Mem_SetAlignment(0x40)`,
+  `ALIGN_64`, `ROUND_UP`/`ROUND_DOWN(x, 64)` in battle/tklib/movie code; DMA needs 16). An unread gap
+  ending on a 0x10/0x40 offset, or a struct size rounded to 0x40, may be deliberate padding or an
+  aligned sub-buffer, not unknown fields: check the allocation's alignment and the gap's end offset
+  before inventing fields.
 - **Fields of B addressed off A's base register = one object** (A extended or a parent struct); gcc
   can't produce cross-symbol offsets from separate externs (FF7 func_800A38FC: `lhu 0x220C($s4)` off
   `&g_BattleWork` landed in `g_BattleSceneContext`; the merged struct matched). Check adjacency
