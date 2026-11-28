@@ -47,6 +47,13 @@
   load `lbu` either way, and `volatile s8` still compiled to `lbu`, so `lbu` alone is not evidence.
   A `(u8)` cast on a test against 0 is folded away; the pointer's own type must be unsigned.
 - **Enum compares are unsigned**; `s32` gives the signed `slti` form.
+- **A `u8`/`u16` compared with a constant becomes an unsigned compare** (`sltiu`; gcc narrows the
+  compare), and a `(s32)` cast doesn't stop it. Target `andi 0xFF` + `slti` = the compares run on an
+  `int`: an `s32` parameter masked in the body, or an `s32` copy of the narrow one (MsGetChr).
+- **Parameter type from the callers:** a `u8` prototype makes callers convert (`lbu`, or `andi` after
+  an `lb`); callers passing `lb`/`lh` values straight = an `int` parameter (MsGetChr: 11 such call
+  sites; compiled `get_u8(s8)` → `lbu`, `get_int(s8)` → `lb`). Check callers before picking `u8` vs
+  `s32` for a function whose body masks its argument; the body alone can't tell (MsGetMon matches both).
 - **A `u16`/`u8` parameter that is only stored to a narrow field adds an `andi`** before the store;
   declare it `s32` even when Switch says 2 bytes (AtelSetEventElemCharIDFromID: `u16` cost one word).
 - **`lbu` + `dsrl` of a flag byte = a 1-bit `u32` bitfield** (func_00158FC8); u8/u64 bitfields don't

@@ -42,6 +42,13 @@ Locations and options: `~/dev/DecompNotes/FFX/Tools.md`. Check it before writing
   faster than scoring whole variants. rtl.py's cut dumps drop loop.c's report: read raw `.loop`.
 - Pass sources: `cse.c`, `gcse.c`, `loop.c`, `jump.c`, `reorg.c`, `haifa-sched.c` (`sched.c` is
   unused), `local-alloc.c`, `global.c`, `alias.c`, `expr.c`, `stmt.c`, `fold-const.c`.
+  **Not `gcse.c`:** the 3a tree's gcse inserts at block ends; our `cc1.bin` has edge-based PRE and
+  store motion (strings `PRE/HOIST: edge (%d,%d)`, `STORE_MOTION`). Read gcse behaviour from the
+  `.gcse` dump (`PRE: redundant insn`, `PRE/HOIST: edge` lines), not that file.
+- **Attribute a difference to one cause only with a control:** change one thing per variant (a test
+  that dropped casts *and* merged two locals "proved" the casts were needed; they weren't), and look
+  for a second source of the same codegen before naming a pass ("the count copy proves gcse ran":
+  a `count` local beside the guard's own read gives the same copy without gcse).
 - Probe the exact shape (void vs value, signed vs unsigned) before declaring something "not gcc".
 
 ## Permuter (last ditch)
@@ -59,7 +66,8 @@ Locations and options: `~/dev/DecompNotes/FFX/Tools.md`. Check it before writing
 ## Tool hygiene
 
 - After changing any per-function tool (ffxfunc, variant, facts, perm, dme, rtl, vsweep), run
-  `toolcheck.py run`; all known matches must pass (its first run found 9 bugs, including a false MATCH
+  `toolcheck.py prepare` (its repo copy is a HEAD snapshot: a stale one gave 43 false failures,
+  2026-11-27) and then `toolcheck.py run`; all known matches must pass (its first run found 9 bugs, including a false MATCH
   and a mangled permuter target).
 - Per-TU helpers (`tidy_externs.py`, `decompile.py`) run on scratch copies only (`--repo`): some
   write their input, and changes to them get tested there before the user runs them.

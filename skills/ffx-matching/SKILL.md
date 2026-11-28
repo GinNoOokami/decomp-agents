@@ -20,6 +20,9 @@ Problems the user hits repeatedly are in `~/dev/DecompNotes/FFX/Troubleshooting.
   for delay slots. Label anything untested "Untested guess:". Hints taken from a scratch match must be
   applied literally to the user's *current* file and confirmed; quote the exact form when form matters
   (func_00159EA8: "keep the result in a local" lost the chained `G = tmp = call()` the match needed).
+  A *shape* hint (loop form, extra pointer, statement structure) needs a scratch match of that
+  shape; a behaviour fact proven from the asm doesn't (func_001B8920: a structure hint from an
+  unmatched 87% version, which the user rightly called a rule break).
   An expression simplified for explanation is "for reading only" unless compiled (an explained
   `x & ~mask` got used as code and cost a `nor`). When several variants tie, report the simplest one,
   closest to the user's code. Offer the next hint rather than the answer.
